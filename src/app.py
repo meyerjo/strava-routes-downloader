@@ -22,8 +22,6 @@ err = app.config.from_file("config_strava_downloader.toml", load=toml.load)
 
 app.strava_config = toml.load("config_strava_downloader.toml")
 
-print(err, app.config)
-
 
 @app.template_filter()
 def format_datetime(value):
@@ -59,7 +57,6 @@ def utility_dir_object():
 @app.route("/login")
 def test_login():
     client = Client()
-    print(url_for("test_redirect"))
     authorize_url = client.authorization_url(
         client_id=app.strava_config["strava"]["client_id"],
         redirect_uri=flask.request.host_url[:-1] + url_for("test_redirect"),
@@ -101,7 +98,6 @@ def update_token():
 @app.route("/")
 def index():
     if session.get("access_token", None) is None:
-
         return flask.redirect(url_for("test_login"))
     cl = Client(access_token=session["access_token"])
     update_token()
