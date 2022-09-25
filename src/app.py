@@ -30,7 +30,7 @@ def format_datetime(value):
 @app.template_filter()
 def format_distance(value):
     grps = re.search("^(\d+)\.\d+ m$", str(value)).groups()
-    return f"{(float(grps[0])/1000):.2f} km"
+    return f"{(float(grps[0]) / 1000):.2f} km"
 
 
 @app.context_processor
@@ -85,13 +85,15 @@ def update_token():
         return False
     if time.time() > session["expires_at"]:
         client = Client()
-        refresh_response = client.refresh_access_token(client_id=app.strava_config["strava"]["client_id"], client_secret=app.strava_config["strava"]["client_secret"],
-            refresh_token=session["refresh_token"])
-        session["access_token"] = refresh_response['access_token']
-        session["refresh_token"] = refresh_response['refresh_token']
-        session["expires_at"] = refresh_response['expires_at']
+        refresh_response = client.refresh_access_token(
+            client_id=app.strava_config["strava"]["client_id"],
+            client_secret=app.strava_config["strava"]["client_secret"],
+            refresh_token=session["refresh_token"],
+        )
+        session["access_token"] = refresh_response["access_token"]
+        session["refresh_token"] = refresh_response["refresh_token"]
+        session["expires_at"] = refresh_response["expires_at"]
     return True
-
 
 
 @app.route("/")
@@ -139,6 +141,7 @@ def reverse_gpx(route_id):
     r = Response(gpx_content, content_type="text/xml")
     r.headers["Content-Disposition"] = f"attachment;filename=route_{route_id}.gpx"
     return r
+
 
 @app.route("/map")
 def show_map():

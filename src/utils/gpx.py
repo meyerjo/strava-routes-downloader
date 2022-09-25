@@ -1,7 +1,6 @@
 from xml.etree import ElementTree as ET
 
 
-
 def reverse_gpx_trackpts(xml_str):
     ET.register_namespace("", "http://www.topografix.com/GPX/1/1")
 
