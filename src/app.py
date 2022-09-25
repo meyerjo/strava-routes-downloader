@@ -18,9 +18,8 @@ from utils.gpx import reverse_gpx_trackpts
 app = Flask(__name__)
 app.secret_key = b"\xdd\xd5\xe7\xf1\x9f\xa0I\x03\xa8(\x16\xab\xff*|\x08\x9e\x8e\x14\x99\xb6*\xe9E5y\xb3\xcb\xee\x13\xa2$"
 
-err = app.config.from_file("config_strava_downloader.toml", load=toml.load)
 
-app.strava_config = toml.load("config_strava_downloader.toml")
+app.strava_config = toml.load("/home/meyerjo/code/private/strava_downloader/config/config_strava_downloader.toml")
 
 
 @app.template_filter()
@@ -86,7 +85,7 @@ def update_token():
         return False
     if time.time() > session["expires_at"]:
         client = Client()
-        refresh_response = client.refresh_access_token(client_id=app.strava_config["strava"]["client_id"], client_secret=pp.strava_config["strava"]["client_secret"],
+        refresh_response = client.refresh_access_token(client_id=app.strava_config["strava"]["client_id"], client_secret=app.strava_config["strava"]["client_secret"],
             refresh_token=session["refresh_token"])
         session["access_token"] = refresh_response['access_token']
         session["refresh_token"] = refresh_response['refresh_token']
@@ -119,7 +118,6 @@ def get_gpx(route_id):
             url_request, headers={"Authorization": f"Bearer {session['access_token']}"}
         )
     except BaseException as e:
-        print(str(e))
         raise e
     return response.content
 
