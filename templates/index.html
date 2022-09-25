@@ -75,41 +75,41 @@
                     <th>Download reverse</th>
                 </tr>
                 {% for route in routes %}
-  <div class="accordion-item">
-                    <tr>
-                        <td>{{ route.name }}</td>
-                        <td>
-                            {% if route.private %}
-                                <i class="bi bi-lock"></i>
-                            {% else %}
-                                <i class="bi bi-unlock"></i>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if route.athlete.id == athlete.id %}
-                                You
-                            {% else %}
-                                {{ route.athlete.firstname }} {{ route.athlete.lastname }}
-                            {% endif %}
-                        </td>
-                        <td>{{ route.starred }}</td>
-                        <td>{{ route.distance|format_distance }}</td>
-                        <td>{{ route.elevation_gain }}</td>
-                        <td>{{ route.timestamp|format_datetime }}</td>
-                        <td><a href="{{ url_for('download_gpx', route_id = route.id) }}">Download</a></td>
-                        <td><a href="{{ url_for('reverse_gpx', route_id = route.id) }}">Download (reverse)</a></td>
-                        <td>
-                            <button class="showmap" data-polyline="{{ route.map.summary_polyline }}" data-routeid="{{ route.id }}">Show map</button>
-<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">Show map</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="4">{{ route.description }}</td>
-                        <td colspan="5">
-                            <div id="map_{{ route.id }}" class="map"></div>
-                        </td>
-                    </tr>
-  </div>
+                    <div class="accordion-item">
+                        <tr>
+                            <td>{{ route.name }}</td>
+                            <td>
+                                {% if route.private %}
+                                    <i class="bi bi-lock"></i>
+                                {% else %}
+                                    <i class="bi bi-unlock"></i>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if route.athlete.id == athlete.id %}
+                                    You
+                                {% else %}
+                                    {{ route.athlete.firstname }} {{ route.athlete.lastname }}
+                                {% endif %}
+                            </td>
+                            <td>{{ route.starred }}</td>
+                            <td>{{ route.distance|format_distance }}</td>
+                            <td>{{ route.elevation_gain }}</td>
+                            <td>{{ route.timestamp|format_datetime }}</td>
+                            <td><a href="{{ url_for('download_gpx', route_id = route.id) }}">Download</a></td>
+                            <td><a href="{{ url_for('reverse_gpx', route_id = route.id) }}">Download (reverse)</a></td>
+                            <td>
+                                <button class="showmap" data-polyline="{{ route.map.summary_polyline }}" data-routeid="{{ route.id }}">Show map</button>
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">Show map</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="4">{{ route.description }}</td>
+                            <td colspan="5">
+                                <div id="map_{{ route.id }}" class="map"></div>
+                            </td>
+                        </tr>
+                    </div>
                 {% endfor %}
             </table>
         </div>
