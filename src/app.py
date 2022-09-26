@@ -59,6 +59,7 @@ def test_login():
     authorize_url = client.authorization_url(
         client_id=app.strava_config["strava"]["client_id"],
         redirect_uri=flask.request.host_url[:-1] + url_for("test_redirect"),
+        scope=["read_all"]
     )
     return flask.redirect(authorize_url)
 
