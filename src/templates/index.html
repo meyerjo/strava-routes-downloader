@@ -66,14 +66,14 @@
             <tr>
                 <th></th>
                 <th>Name</th>
-                <th>Is private</th>
-                <th>Owner</th>
-                <th>Favorite</th>
-                <th>Distance</th>
-                <th>Elevation Gain</th>
-                <th>Change Time</th>
+                <th class="d-none d-lg-table-cell">Is private</th>
+                <th class="d-none d-lg-table-cell">Owner</th>
+                <th class="d-none d-lg-table-cell">Favorite</th>
+                <th class="d-none d-lg-table-cell">Distance</th>
+                <th class="d-none d-lg-table-cell">Elevation Gain</th>
+                <th class="d-none d-lg-table-cell">Change Time</th>
                 <th>Download</th>
-                <th>Download reverse</th>
+                <th class="d-none d-lg-table-cell">Download reverse</th>
             </tr>
             </thead>
             <tbody>
@@ -89,26 +89,84 @@
                         </button>
                     </td>
                     <td>{{ route.name }}</td>
-                    <td>
+                    <td  class="d-none d-lg-table-cell">
                         {% if route.private %}
                             <i class="bi bi-lock"></i>
                         {% else %}
                             <i class="bi bi-unlock"></i>
                         {% endif %}
                     </td>
-                    <td>
+                    <td class="d-none d-lg-table-cell">
                         {% if route.athlete.id == athlete.id %}
                             You
                         {% else %}
                             {{ route.athlete.firstname }} {{ route.athlete.lastname }}
                         {% endif %}
                     </td>
-                    <td>{{ route.starred }}</td>
-                    <td>{{ route.distance|format_distance }}</td>
-                    <td>{{ route.elevation_gain }}</td>
-                    <td>{{ route.timestamp|format_datetime }}</td>
-                    <td><a href="{{ url_for('download_gpx', route_id = route.id) }}">Download</a></td>
-                    <td><a href="{{ url_for('reverse_gpx', route_id = route.id) }}">Download (reverse)</a></td>
+                    <td class="d-none d-lg-table-cell">
+                        {{ route.starred }}
+                    </td>
+                    <td class="d-none d-lg-table-cell">{{ route.distance|format_distance }}</td>
+                    <td class="d-none d-lg-table-cell">{{ route.elevation_gain }}</td>
+                    <td class="d-none d-lg-table-cell">{{ route.timestamp|format_datetime }}</td>
+                    <td>
+                        <a href="{{ url_for('download_gpx', route_id = route.id) }}">
+                            <i class="bi bi-download bi--2xl"></i>
+                        </a>
+                    </td>
+                    <td class="d-none d-lg-table-cell">
+                        <a href="{{ url_for('reverse_gpx', route_id = route.id) }}">Download (reverse)</a>
+                    </td>
+                    <td class="d-lg-none d-md-table-cell">
+                        <ul class="nav nav-pills">
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">
+                                    <span class="navbar-toggler-icon"></span>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <span class="dropdown-item">
+                                        Elavation Gain: {{ route.elevation_gain }}
+                                        </span>
+                                    </li>
+                                    <li>
+                                        <span class="dropdown-item">
+                                        Distance:       {{ route.distance|format_distance }}
+                                        </span>
+                                    </li>
+                                    <li>
+                                        <span class="dropdown-item">
+                                        Change Time: {{ route.timestamp|format_datetime }}
+                                        </span>
+                                    </li>
+
+                                    <li>
+                                        <span class="dropdown-item">
+                                        Status:
+                                            {% if route.private %}
+                                                <i class="bi bi-lock"></i>
+                                            {% else %}
+                                                <i class="bi bi-unlock"></i>
+                                            {% endif %}
+                                        </span>
+                                    </li>
+                                    <li>
+                                        <span class="dropdown-item">
+                                            Owner:
+                                            {% if route.athlete.id == athlete.id %}
+                                                You
+                                            {% else %}
+                                                {{ route.athlete.firstname }} {{ route.athlete.lastname }}
+                                            {% endif %}
+                                        </span>
+                                    </li>
+                                    <li><span class="dropdown-item">Starred: {{ route.starred }}</span></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('reverse_gpx', route_id = route.id) }}">Download (reverse)</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                    </td>
                 </tr>
                 <tr>
                     <td colspan="12" style="padding: 0 !important">
