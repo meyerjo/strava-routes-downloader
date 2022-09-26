@@ -17,6 +17,8 @@
             integrity="sha256-NDI0K41gVbWqfkkaHj15IzU7PtMoelkzyKp8TOaFQ3s="
             crossorigin=""></script>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js" integrity="sha512-yocoLferfPbcwpCMr8v/B0AB4SWpJlouBwgE0D3ZHaiP1nuu5djZclFEIj9znuqghaZ3tdCMRrreLoM8km+jIQ==" crossorigin="anonymous"></script>
+
     <style>
         .map {
             height: 400px;
@@ -191,6 +193,17 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
 
 <script>
+    function makeArr(startValue, stopValue, cardinality) {
+        var arr = [];
+        var step = (stopValue - startValue) / (cardinality - 1);
+        for (var i = 0; i < cardinality; i++) {
+            arr.push([Math.floor(startValue + (step * i)), Math.floor(startValue + (step * (i+1)))-1]);
+        }
+        arr[arr.length - 1][1] = stopValue;
+        return arr;
+    }
+
+    var color_scale = chroma.scale(["yellow", "red"]);
     var map = undefined;
 
     var map_buttons = document.querySelectorAll("button.showmap");
@@ -200,8 +213,8 @@
                 map.remove();
                 map = undefined;
             }
+
             let dataset = this.dataset;
-            console.log('map_' + dataset['routeid'])
             map = L.map('map_' + dataset['routeid']).setView([40.5, -76.5], 9);
             L.tileLayer('http://b.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 18,
@@ -209,25 +222,30 @@
             }).addTo(map);
             let polyline = dataset['polyline'].replace(/\\\\/g, '\\')
             var decoded = decode(polyline, 1e5);
-            console.log(decoded);
-            var json = {
-                type:'FeatureCollection',
-                features: [{
-                    type: 'Feature',
-                    geometry: {
-                        type: 'LineString',
-                        coordinates: decoded
-                    },
-                    properties: {}
-                }]
-            };
-            geojson = L.geoJson(json,{ style: function(feature) {
-                    return { fillColor: feature.properties.fill,
-                        color: '#9900CC',
-                        opacity: 0.75,
-                        weight: 7,
-                    };
-                }});
+
+            var intervals = makeArr(0, decoded.length, 10);
+
+            var json = {type:'FeatureCollection', features: []};
+            intervals.forEach(function(interval, i) {
+                console.log(i, interval);
+                json["features"].push(
+                    {
+                        type: "Feature",
+                        geometry: { type: "LineString", coordinates: decoded.slice(interval[0], interval[1]) },
+                        properties: { id: i }
+                    }
+                )
+            });
+
+            geojson = L.geoJson(json,
+                { style: function(feature) {
+                        return {
+                            fillColor: feature.properties.fill,
+                            color: color_scale(feature.properties.id/10).hex(),
+                            opacity: 0.75,
+                            weight: 7,
+                        };
+                    }});
             //render the geojson
             geojson.addTo(map);
             //fit it in view
