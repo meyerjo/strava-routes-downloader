@@ -1,133 +1,562 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+    <title>Route Companion</title>
+    <meta charset="utf-8" />
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <!-- Get the leaflet CSS file -->
+    <link rel="stylesheet" href=
+            "https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
+          integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+          crossorigin="" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
 
-
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.1/dist/leaflet.css"
-          integrity="sha256-sA+zWATbFveLLNqWO2gtiw3HL/lh1giY/Inf1BJ0z14="
-          crossorigin=""/>
-
-    <!-- Make sure you put this AFTER Leaflet's CSS -->
-    <script src="https://unpkg.com/leaflet@1.9.1/dist/leaflet.js"
-            integrity="sha256-NDI0K41gVbWqfkkaHj15IzU7PtMoelkzyKp8TOaFQ3s="
-            crossorigin=""></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.1/dist/leaflet.css"
-          integrity="sha256-sA+zWATbFveLLNqWO2gtiw3HL/lh1giY/Inf1BJ0z14="
-          crossorigin=""/>
-
-    <!-- Make sure you put this AFTER Leaflet's CSS -->
-    <script src="https://unpkg.com/leaflet@1.9.1/dist/leaflet.js"
-            integrity="sha256-NDI0K41gVbWqfkkaHj15IzU7PtMoelkzyKp8TOaFQ3s="
-            crossorigin=""></script>
     <style>
-        #map { height: 500px; }
+        #mydiv {
+            position: absolute;
+            z-index: 99999;
+            background-color: #f1f1f1;
+            border: 1px solid #d3d3d3;
+            text-align: center;
+            top: 60%;
+            left: 40%;
+            width: 30%;
+        }
 
-        .hiddenRow {
-            padding: 0 !important;
+        #mydivheader {
+            padding: 10px;
+            cursor: move;
+            z-index: 100000;
+            background-color: #2196F3;
+            color: #fff;
+            width: 100%;
+        }
+
+        #localElevation {
+            position: absolute;
+            z-index: 99999;
+            background-color: #f1f1f1;
+            border: 1px solid #d3d3d3;
+            text-align: center;
+            top: 60%;
+            left: 70%;
+            width: 30%;
+        }
+
+        #localElevationheader {
+            padding: 10px;
+            cursor: move;
+            z-index: 100000;
+            background-color: #2196F3;
+            color: #fff;
+            width: 100%;
+        }
+
+        #map{
+            position: absolute;
+            top: 50px;
+            bottom: 0;
+            width: 100%;
+        }
+        #header{
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+            height: 50px;
+            z-index: 1000;
+            background-color: lightgrey;
         }
     </style>
 </head>
-<body>
-<div id="map"></div>
-<div class="container">
-    <div class="col-md-12">
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                Employee
+<body style="margin: 0">
+<div class="modal" tabindex="-1" id="myModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Too far of track</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="panel-body">
-                <div class="accordion" id="accordionExample">
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="headingOne">
-                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                                Accordion Item #1
-                            </button>
-                        </h2>
-                        <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
-                            <div class="accordion-body">
-                                <strong>This is the first item's accordion body.</strong> It is shown by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
-                            </div>
-                        </div>
-                    </div>
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="headingTwo">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                                Accordion Item #2
-                            </button>
-                        </h2>
-                        <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
-                            <div class="accordion-body">
-                                <strong>This is the second item's accordion body.</strong> It is hidden by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                    <table class="table table-condensed table-striped">
-                        <thead>
-                        <tr>
-                            <th></th>
-                            <th>Fist Name</th>
-                            <th>Last Name</th>
-                            <th>City</th>
-                            <th>State</th>
-                            <th>Status</th>
-                        </tr>
-                        </thead>
-
-                        <tbody>
-                        <tr>
-                            <td>
-                                <button class="btn btn-default btn-xs"><span class="glyphicon glyphicon-eye-open"></span></button>
-                                <button type="button" data-bs-toggle="collapse" data-bs-target="#demo2" aria-expanded="true" aria-controls="collapseOne">
-                                    Accordion Item #1
-                                </button>
-                            </td>
-                            <td>Silvio</td>
-                            <td>Santos</td>
-                            <td>São Paulo</td>
-                            <td>SP</td>
-                            <td> new</td>
-                        </tr>
-                        <tr>
-                            <td colspan="6" class="hiddenRow"><div id="demo2" class="accordion-collapse collapse">Demo2</div></td>
-                        </tr>
-                        <tr data-toggle="collapse" data-target="#demo3" class="accordion-toggle">
-                            <td><button class="btn btn-default btn-xs"><span class="glyphicon glyphicon-eye-open"></span></button></td>
-                            <td>John</td>
-                            <td>Doe</td>
-                            <td>Dracena</td>
-                            <td>SP</td>
-                            <td> New</td>
-                        </tr>
-                        <tr>
-                            <td colspan="6" class="hiddenRow"><div id="demo3" class="accordian-body collapse">Demo3 sadasdasdasdasdas</div></td>
-                        </tr>
-                        </tbody>
-                    </table>
+            <div class="modal-body">
+                <p>You are too far of track. Thus, this feature is not available.</p>
             </div>
-
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
         </div>
-
     </div>
 </div>
+<!-- Specify the map and it's dimensions -->
+<div id="header">
+    <nav class="navbar navbar-expand-lg bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#" id="locate" title="Locate your device">
+                <i class="bi bi-geo-alt"></i> Locate
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item" title="Total distance">
+                        <i class="bi bi-arrow-left-right"></i> <span id="totalDistance"></span> km
+                    </li>
+                    <li class="nav-item" style="text-align: center" title="Elevation statistics">
+                        <div>
+                            <i class="bi bi-arrow-up-short"></i> <span id="totalElevationUp"></span>
+                        </div>
+                        <div>
+                            <i class="bi bi-arrow-down-short"></i> <span id="totalElevationDown"></span>
+                        </div>
+                    </li>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
+                    <!-- current Position -->
+                    <li class="nav-item disableTooFar" style="text-align: center; vertical-align: middle; margin-left: 20px;" title="Already done">
+                        <i class="bi bi-check-square"></i>
+                    </li>
+                    <li class="nav-item disableTooFar" title="Already done">
+                        <div>
+                            <i class="bi bi-arrow-up-short"></i> <span id="currentPosTotalElevationUp"></span>
+                        </div>
+                        <div>
+                            <i class="bi bi-arrow-down-short"></i>  <span id="currentPosTotalElevationDown"></span>
+                        </div>
+                    </li>
+                    <li class="nav-item disableTooFar" title="Already done">
+                        <i class="bi bi-arrow-left-right"></i> <span id="currenPositionTotalDistance"></span> km
+                    </li>
+
+
+                    <li class="nav-item disableTooFar" style="text-align: center; vertical-align: middle; margin-left: 20px;" title="Still to be done">
+                        <i class="bi bi-square"></i>
+                    </li>
+                    <li class="nav-item disableTooFar" title="Still to be done">
+                        <div>
+                            <i class="bi bi-arrow-up-short"></i> <span id="currentPosTotalElevationUpRest"></span>
+                        </div>
+                        <div>
+                            <i class="bi bi-arrow-down-short"></i>  <span id="currentPosTotalElevationDownRest"></span>
+                        </div>
+                    </li>
+                    <li class="nav-item disableTooFar" title="Still to be done">
+                        <i class="bi bi-arrow-left-right"></i> <span id="currentPositionTotalDistanceRest"></span> km
+                    </li>
+                    <li class="nav-item" style="margin-left: 20px;" title="Distance to the track">
+                        <span id="distanceToTrack"></span>
+                    </li>
+                    <li class="nav-item" style="margin-left: 20px;" title="Distance to the track">
+                        <a class="nav-link" href="#" id="zoomInPosition" >
+                            <i class="bi bi-zoom-in"></i> To your position
+                        </a>
+                    </li>
+                </ul>
+                <div class="d-flex" role="search">
+                    <div class="btn-group dropstart">
+                        <!-- fix this button -->
+                        <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-gear-fill"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item drop" data-value="random-atlength" href="#">Random</a></li>
+                            <li><a class="dropdown-item drop" data-value="random-along" href="#">Random Along</a></li>
+                            <li><a class="dropdown-item drop" data-value="random" href="#">Random</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <label>
+                                    <input type="color" id="elevation_up" class="elevation" value="#FF0000" /> Color Up
+                                </label>
+                            </li>
+                            <li>
+                                <label>
+                                    <input type="color" id="elevation_down" class="elevation" value="#00FF00" /> Color Down
+                                </label>
+                            </li>
+                            <li>
+                                <label>
+                                    <input type="color" id="elevation_neutral" class="elevation" value="#808080" /> Color Neutral
+                                </label>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+    </nav>
+</div>
+<div class="container-fluid" style="padding: 0">
+    <div class="row">
+        <div class="col-sm">
+            <div id="map" ></div>
+        </div>
+    </div>
+    <!--    <button style="z-index: 100000; position: absolute; top: 20%; left: 20px;">Toggle </button>-->
+
+    <div class="row">
+        <!-- Draggable DIV -->
+        <div id="mydiv" class="draggable col-sm">
+            <!-- Include a header DIV with the same name as the draggable DIV, followed by "header" -->
+            <div id="mydivheader">
+                <i class="bi bi-arrows-move"></i>Height Profile
+                <a href="#" class="close" style="text-decoration: none; float: right;"><i class="bi bi-dash-square"></i></a>
+            </div>
+            <div class="draggable_content">
+                <div id="graphcontainer"></div>
+                <button type="button" class="btn btn-primary visualizationToggle" value="current_position">From <i class="bi bi-geo-alt"></i></button>
+                <button type="button" class="btn btn-primary visualizationToggle" value="show_map_content">In <i class="bi bi-map"></i></button>
+                <button type="button" class="btn btn-primary visualizationToggle" value="reset">Reset</button>
+            </div>
+        </div>
+        <!-- Draggable DIV -->
+        <div id="localElevation" class="draggable col-sm">
+            <!-- Include a header DIV with the same name as the draggable DIV, followed by "header" -->
+            <div id="localElevationheader">
+                <i class="bi bi-arrows-move"></i>Local Height Profile
+                <a href="#" class="close" style="text-decoration: none; float:right"><i class="bi bi-dash-square"></i></a>
+            </div>
+            <div class="draggable_content">
+                <div id="localElevationGraph"></div>
+                <button type="button" class="btn btn-primary distanceElevationProfile" value="1"><span class="badge text-bg-secondary">1 km</span></button>
+                <button type="button" class="btn btn-primary distanceElevationProfile" value="2"><span class="badge text-bg-secondary">2 km</span></button>
+                <button type="button" class="btn btn-primary distanceElevationProfile" value="3"><span class="badge text-bg-secondary">3 km</span></button>
+                <button type="button" class="btn btn-primary distanceElevationProfile" value="next_peak"><span class="badge text-bg-secondary">Next peak</span></button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Get the leaflet JavaScript file -->
+<script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+        integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
+        crossorigin=""></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="{{ url_for('static', filename='/js/togeojson.js') }}"></script>
+
+<!--<script>-->
+<!--    window.localElevationGraph = null;-->
+<!--</script>-->
+
+<script src="{{ url_for('static', filename='js/GPXParser.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/track_distances.js') }}"></script>
+<script src="{{ url_for('static', filename='js/ui/toggle_buttons.js') }}"></script>
+<script src="{{ url_for('static', filename='js/ui/drop_fake_location.js') }}"></script>
+<script src="{{ url_for('static', filename='js/data/gpx_tracks.js') }}"></script>
 
 <script>
+    <!-- Threshold away from track -->
+    const AWAY_FROM_TRACK_THRESHOLD = 5000;
 
-    var map = L.map('map').setView([51.505, -0.09], 13);
+    const ELEVATION_INCREASING = "#FF0000";
+    const ELEVATION_DECREASING = "#00FF00";
+    const ELEVATION_NEUTRAL = "#808080";
 
-    var tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(map);
+    function retrievePlotlines(currentPosition = null, clickLocation = null) {
+        var closest_point_on_track = null;
+        var plotLines = [];
+        if ((currentPosition !== undefined) && (currentPosition !== null)) {
+            closest_point_on_track = findClosestPointOnTrack(currentPosition.latitude, currentPosition.longitude);
+            if (closest_point_on_track.metricDistance < AWAY_FROM_TRACK_THRESHOLD) {
+                plotLines.push(
+                    {
+                        color: '#00FF00', // Red
+                        width: 2,
+                        value: closest_point_on_track.index // Position, you'll have to translate this to the values on your x axis
+                    }
+                );
+            }
+        }
+
+        if ((clickLocation !== undefined) && (clickLocation !== null)) {
+            closest_point_on_track = findClosestPointOnTrack(clickLocation.latitude, clickLocation.longitude);
+            if (closest_point_on_track.metricDistance < AWAY_FROM_TRACK_THRESHOLD) {
+                plotLines.push(
+                    {
+                        color: '#FF0000', // Red
+                        width: 2,
+                        value: closest_point_on_track.index // Position, you'll have to translate this to the values on your x axis
+                    }
+                )
+            }
+        }
+        return plotLines;
+    }
+
+    function updatePositionSpecificCues() {
+        if (window.currentPosition !== undefined) {
+            var closest_point_on_track = findClosestPointOnTrack(window.currentPosition.latitude, window.currentPosition.longitude);
+            document.getElementById("currentPosTotalElevationUp").innerHTML = `${Number(trackStatistics.elevationPositiveAccumulated[closest_point_on_track.index]).toFixed(2)}`;
+            document.getElementById("currentPosTotalElevationDown").innerHTML = `${Number(trackStatistics.elevationNegativeAccumulated[closest_point_on_track.index]).toFixed(2)}`;
+            document.getElementById("currenPositionTotalDistance").innerHTML = `${Number(trackStatistics.distancesAccumulated[closest_point_on_track.index]).toFixed(2)}`;
+
+            var rest_positive = trackStatistics.elevationPositiveAccumulated[trackStatistics.elevationPositiveAccumulated.length - 1] - trackStatistics.elevationPositiveAccumulated[closest_point_on_track.index];
+            var rest_negative = trackStatistics.elevationNegativeAccumulated[trackStatistics.elevationNegativeAccumulated.length - 1] - trackStatistics.elevationNegativeAccumulated[closest_point_on_track.index];
+            var rest_distance = trackStatistics.distancesAccumulated[trackStatistics.distancesAccumulated.length - 1] - trackStatistics.distancesAccumulated[closest_point_on_track.index];
+
+            document.getElementById("currentPosTotalElevationUpRest").innerHTML = `${Number(rest_positive).toFixed(2)}`;
+            document.getElementById("currentPosTotalElevationDownRest").innerHTML = `${Number(rest_negative).toFixed(2)}`;
+            document.getElementById("currentPositionTotalDistanceRest").innerHTML = `${Number(rest_distance).toFixed(2)}`;
+
+            if (closest_point_on_track.metricDistance < 10) {
+                document.getElementById("distanceToTrack").innerHTML = `You are right on track.`;
+                document.querySelectorAll(".disableTooFar").forEach((elm) => {
+                    elm.style.display = "block";
+                });
+            }
+            else if (closest_point_on_track.metricDistance < AWAY_FROM_TRACK_THRESHOLD) {
+                document.getElementById("distanceToTrack").innerHTML = `You are ${Number(closest_point_on_track.metricDistance).toFixed(2)} m away from track.`;
+                document.querySelectorAll(".disableTooFar").forEach((elm) => {
+                    elm.style.display = "block";
+                });
+            }
+            else {
+                document.getElementById("distanceToTrack").innerHTML = `You are ${Number(closest_point_on_track.metricDistance/1000).toFixed(2)} km away from track.`;
+
+                document.querySelectorAll(".disableTooFar").forEach((elm) => {
+                    elm.style.display = "none";
+                });
+            }
+
+            var plotLines = retrievePlotlines(window.currentPosition, null);
+            window.chart.update({
+                xAxis: {
+                    plotLines: plotLines
+                },
+            });
+        }
+    }
+</script>
+<script>
+
+    document.getElementById("zoomInPosition").addEventListener("click", () => {
+       if ((window.currentPosition === undefined) || (window.currentPosition === null)) {
+           return;
+       }
+       map.setView([window.currentPosition.latitude, window.currentPosition.longitude], 16);
+    });
+
+    document.querySelectorAll("input[type='color'].elevation").forEach((inp) => {
+        inp.addEventListener("change", function () {
+            console.log(this.id, this.value);
+            if (this.id === "elevation_up") {
+                localStorage.setItem("color_increasing", this.value);
+            } else if (this.id === "elevation_down") {
+                localStorage.setItem("color_decreasing", this.value);
+            } else if (this.id === "elevation_neutral") {
+                localStorage.setItem("color_neutral", this.value);
+            }
+            load_data();
+        });
+    });
+
+
+    document.querySelectorAll(".draggable a.close").forEach((btn) => {
+        btn.addEventListener(
+            "click", function() {
+                var parent_element = this.closest(".draggable");
+                var content_element = parent_element.querySelector("div.draggable_content");
+                if (content_element.style.display === "none") {
+                    content_element.style.display = "block";
+                } else {
+                    content_element.style.display = "none";
+                }
+            }
+        )
+    });
+
+    <!-- remove at some point -->
+    document.querySelectorAll("a.drop").forEach((btn) => {
+        btn.addEventListener("click", drop_gps_location)
+    });
+
+    document.querySelectorAll("button.visualizationToggle").forEach((btn) => {
+        btn.addEventListener("click", toggle_global_elevation_button);
+    });
+
+    document.querySelectorAll("button.distanceElevationProfile").forEach((btn) => {
+        btn.addEventListener("click", toggle_local_elevation_button);
+    });
 
 </script>
+<script>
+    var moving_marker = null;
+    var markerCurrentPosition = null;
+    var locationMarker = null;
+    const options = {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0
+    };
 
+    function success(pos) {
+        const crd = pos.coords;
+        window.currentPosition = crd
+        console.log(`Your current position is: Latitude : ${crd.latitude}; Longitude: ${crd.longitude}; More or less ${crd.accuracy} meters.`);
+
+        // Show a market at the position of the Eiffel Tower
+        locationMarker = L.marker([crd.latitude, crd.longitude]);
+        locationMarker.addTo(window.map);
+        updatePositionSpecificCues();
+    }
+
+    function error(err) {
+        console.warn(`ERROR(${err.code}): ${err.message}`);
+    }
+
+
+    function get_currentPosition() {
+        navigator.geolocation.getCurrentPosition(success, error, options);
+    }
+
+    document.getElementById("locate").addEventListener('click', (e) => {
+        e.preventDefault();
+        get_currentPosition();
+    });
+
+</script>
+<script>
+
+    // Initialize the map
+    const map = L.map('map')
+
+    // Get the tile layer from OpenStreetMaps
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+
+        // Specify the maximum zoom of the map
+        maxZoom: 19,
+
+        // Set the attribution for OpenStreetMaps
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // Set the view of the map
+    // with the latitude, longitude and the zoom value
+    map.setView([0, 0], 16);
+
+    map.on('click', function(e) {
+        var popLocation= e.latlng;
+
+        var plotLines = retrievePlotlines(
+            window.currentPosition,
+            {
+                latitude: popLocation.lat,
+                longitude: popLocation.lng
+            }
+        );
+        window.chart.update({
+            xAxis: {
+                plotLines: plotLines
+            },
+        });
+    });
+
+
+    window.map = map;
+
+</script>
+<script>
+    var elevation_increasing_color = localStorage.getItem("color_increasing");
+    if (elevation_increasing_color !== null) {
+        document.getElementById("elevation_up").value = elevation_increasing_color;
+    }
+    var elevation_decreasing_color = localStorage.getItem("color_decreasing");
+    if (elevation_decreasing_color !== null) {
+        document.getElementById("elevation_down").value = elevation_decreasing_color;
+    }
+    var elevation_neutral_color = localStorage.getItem("color_neutral");
+    if (elevation_neutral_color !== null) {
+        document.getElementById("elevation_neutral").value = elevation_neutral_color;
+    }
+</script>
+
+
+<script src="{{ url_for('static', filename='js/plot/elevation.js') }}"></script>
+<script src="{{ url_for('static', filename='js/data/geojson_grouping.js') }}"></script>
+<script>
+
+    function load_data() {
+
+        const data_href = window.location.href;
+        var url = new URL(data_href);
+        var route_id = url.searchParams.get('route_id');
+
+        fetch("/gpx/" + route_id)
+            .then(response => response.text())
+            .then((data) => {
+                window.gpx = new gpxParser();
+                window.gpx.parse(data);
+
+                var geoJson_dom = (new DOMParser()).parseFromString(data, 'text/xml');
+                var geo_json = toGeoJSON.gpx(geoJson_dom);
+
+                window.trackStatistics = point_statistics(window.gpx.tracks[0].points);
+                const accumulated_elevation_positive = trackStatistics.elevationPositiveAccumulated;
+                const accumulated_elevation_negative = trackStatistics.elevationNegativeAccumulated;
+                get_currentPosition();
+
+                document.getElementById("totalDistance").innerHTML = `${Number(window.gpx.tracks[0].distance.total/1000).toFixed(2)}`;
+                document.getElementById("totalElevationUp").innerHTML = `${Number(accumulated_elevation_positive[accumulated_elevation_positive.length -1]).toFixed(2)}`;
+                document.getElementById("totalElevationDown").innerHTML = `${Number(accumulated_elevation_negative[accumulated_elevation_negative.length -1]).toFixed(2)}`;
+
+                var elevation_increasing_color = localStorage.getItem("color_increasing");
+                if (elevation_increasing_color === null) {
+                    elevation_increasing_color = ELEVATION_INCREASING;
+                    localStorage.setItem("color_increasing", elevation_increasing_color);
+                }
+                var elevation_decreasing_color = localStorage.getItem("color_decreasing");
+                if (elevation_decreasing_color === null) {
+                    elevation_decreasing_color = ELEVATION_DECREASING;
+                    localStorage.setItem("color_decreasing", elevation_decreasing_color);
+                }
+                var elevation_neutral_color = localStorage.getItem("color_neutral");
+                if (elevation_neutral_color === null) {
+                    elevation_neutral_color = ELEVATION_NEUTRAL;
+                    localStorage.setItem("color_neutral", elevation_neutral_color);
+                }
+
+
+                var custom_json = geo_json_grouped_by_elevation_change(geo_json);
+
+                if (window.geo_json_layer !== undefined) {
+                    window.map.removeLayer(window.geo_json_layer);
+                }
+
+                window.geo_json_layer = L.geoJson(custom_json, {
+                    style: function (feature) {
+                        var color = "#000000";
+                        if (feature.properties.elevation > 0) {
+                            color = elevation_increasing_color;
+                        } else if (feature.properties.elevation < 0) {
+                            color = elevation_decreasing_color;
+                        } else {
+                            color = elevation_neutral_color;
+                        }
+                        console.log(color);
+                        return {
+                            "color": color,
+                            "opacity": 1,
+                            "weight": 5
+                        }}
+                });
+
+                window.geo_json_layer
+                    .on('add', function(e) {
+                        console.log(e.target.getBounds());
+                        window.map.fitBounds(e.target.getBounds());
+                    })
+                    .addTo(window.map);
+
+                window.chart = plotElevation("graphcontainer", null, null);
+            });
+    }
+
+    load_data();
+</script>
+<script src="{{ url_for('static', filename='js/draggable_elements.js') }}"></script>
+<script>
+    // Make the DIV element draggable:
+    dragElement(document.getElementById("mydiv"));
+    dragElement(document.getElementById("localElevation"));
+</script>
 </body>
 </html>

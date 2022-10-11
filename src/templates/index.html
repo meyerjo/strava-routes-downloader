@@ -76,6 +76,7 @@
                 <th class="d-none d-lg-table-cell">Change Time</th>
                 <th>Download</th>
                 <th class="d-none d-lg-table-cell">Download reverse</th>
+                <th class="d-none d-lg-table-cell">Companion</th>
             </tr>
             </thead>
             <tbody>
@@ -118,6 +119,9 @@
                     </td>
                     <td class="d-none d-lg-table-cell">
                         <a href="{{ url_for('reverse_gpx', route_id = route.id) }}">Download (reverse)</a>
+                    </td>
+                    <td class="d-none d-lg-table-cell">
+                        <a href="{{ url_for('show_map') }}?route_id={{ route.id }}">Route Companion</a>
                     </td>
                     <td class="d-lg-none d-md-table-cell">
                         <ul class="nav nav-pills">

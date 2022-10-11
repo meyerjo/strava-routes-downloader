@@ -15,7 +15,14 @@ from stravalib import Client
 
 from utils.gpx import reverse_gpx_trackpts
 
-app = Flask(__name__)
+import os
+print(os.getcwd())
+
+
+app = Flask(
+    __name__,
+    static_folder=os.getcwd() + "/static/"
+)
 app.secret_key = b"\xdd\xd5\xe7\xf1\x9f\xa0I\x03\xa8(\x16\xab\xff*|\x08\x9e\x8e\x14\x99\xb6*\xe9E5y\xb3\xcb\xee\x13\xa2$"
 
 
@@ -131,6 +138,14 @@ def download_gpx(route_id):
     gpx_content = get_gpx(route_id)
     r = Response(gpx_content, content_type="text/xml")
     r.headers["Content-Disposition"] = f"attachment;filename=route_{route_id}.gpx"
+    return r
+
+
+@app.route("/gpx/<route_id>")
+def retrieve_gpx(route_id):
+    update_token()
+    gpx_content = get_gpx(route_id)
+    r = Response(gpx_content, content_type="text/xml")
     return r
 
 
