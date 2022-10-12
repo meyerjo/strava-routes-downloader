@@ -160,9 +160,9 @@
                             <i class="bi bi-gear-fill"></i>
                         </button>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item drop" data-value="random-atlength" href="#">Random</a></li>
-                            <li><a class="dropdown-item drop" data-value="random-along" href="#">Random Along</a></li>
-                            <li><a class="dropdown-item drop" data-value="random" href="#">Random</a></li>
+                            <li><a class="dropdown-item drop" data-value="random-atlength" href="#">Random on path</a></li>
+                            <li><a class="dropdown-item drop" data-value="random-along" href="#">Random along the path</a></li>
+                            <li><a class="dropdown-item drop" data-value="random" href="#">Random (within view)</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <label>
@@ -346,7 +346,45 @@
 <script>
 
     document.querySelector("fieldset").addEventListener("change", (e) => {
-        console.log("new fieldset value", e.target.value);
+        if (e.target.value === "public_transport") {
+
+            var greenIcon = new L.icon({iconUrl: 'static/trainstation.png', iconSize: [16, 16]});
+            var search_obj = {
+                min_lon: window.route_bounds._southWest.lng,
+                max_lon: window.route_bounds._northEast.lng,
+                min_lat: window.route_bounds._southWest.lat,
+                max_lat: window.route_bounds._northEast.lat
+            };
+            var search_params = new URLSearchParams(search_obj);
+            if ((window.layerGroup === undefined) || (window.layerGroup === null)) {
+                fetch("/osm/trainstation?" + search_params)
+                    .then((response) => response.json())
+                    .then((data) => {
+                        window.station_data = data;
+                        window.layerGroup = L.layerGroup();
+                        data.forEach((elm) => {
+                            let marker = L.marker(
+                                [elm.latitude, elm.longitude],
+                                {icon: greenIcon}
+                            ).bindPopup(
+                                JSON.stringify(elm.tags, " ", 2)
+                            );
+                            window.layerGroup.addLayer(marker);
+                        });
+                        window.layerGroup.addTo(window.map);
+                    });
+            } else {
+                window.layerGroup.addTo(window.map);
+            }
+
+        } else {
+            console.log("new fieldset value", e.target.value);
+            if ((window.layerGroup !== undefined) && (window.layerGroup !== null)) {
+                window.map.removeLayer(window.layerGroup);
+
+            }
+
+        }
     });
 
     document.getElementById("zoomInPosition").addEventListener("click", () => {
@@ -495,8 +533,72 @@
 <script src="{{ url_for('static', filename='js/data/geojson_grouping.js') }}"></script>
 <script>
 
-    function load_data() {
+    function visualize_map(route_id) {
+        var route_data_str = localStorage.getItem("gpx_route_" + route_id);
+        var route_data_obj = JSON.parse(route_data_str);
+        var geoJson_dom = (new DOMParser()).parseFromString(route_data_obj.data, 'text/xml');
+        var geo_json = toGeoJSON.gpx(geoJson_dom);
 
+        window.trackStatistics = point_statistics(window.gpx.tracks[0].points);
+        const accumulated_elevation_positive = trackStatistics.elevationPositiveAccumulated;
+        const accumulated_elevation_negative = trackStatistics.elevationNegativeAccumulated;
+        get_currentPosition();
+
+        document.getElementById("totalDistance").innerHTML = `${Number(window.gpx.tracks[0].distance.total/1000).toFixed(2)}`;
+        document.getElementById("totalElevationUp").innerHTML = `${Number(accumulated_elevation_positive[accumulated_elevation_positive.length -1]).toFixed(2)}`;
+        document.getElementById("totalElevationDown").innerHTML = `${Number(accumulated_elevation_negative[accumulated_elevation_negative.length -1]).toFixed(2)}`;
+
+        var elevation_increasing_color = localStorage.getItem("color_increasing");
+        if (elevation_increasing_color === null) {
+            elevation_increasing_color = ELEVATION_INCREASING;
+            localStorage.setItem("color_increasing", elevation_increasing_color);
+        }
+        var elevation_decreasing_color = localStorage.getItem("color_decreasing");
+        if (elevation_decreasing_color === null) {
+            elevation_decreasing_color = ELEVATION_DECREASING;
+            localStorage.setItem("color_decreasing", elevation_decreasing_color);
+        }
+        var elevation_neutral_color = localStorage.getItem("color_neutral");
+        if (elevation_neutral_color === null) {
+            elevation_neutral_color = ELEVATION_NEUTRAL;
+            localStorage.setItem("color_neutral", elevation_neutral_color);
+        }
+
+
+        var custom_json = geo_json_grouped_by_elevation_change(geo_json);
+        if (window.geo_json_layer !== undefined) {
+            window.map.removeLayer(window.geo_json_layer);
+        }
+
+        window.geo_json_layer = L.geoJson(custom_json, {
+            style: function (feature) {
+                var color = "#000000";
+                if (feature.properties.elevation > 0) {
+                    color = elevation_increasing_color;
+                } else if (feature.properties.elevation < 0) {
+                    color = elevation_decreasing_color;
+                } else {
+                    color = elevation_neutral_color;
+                }
+                return {
+                    "color": color,
+                    "opacity": 1,
+                    "weight": 5
+                }}
+        });
+
+        window.geo_json_layer
+            .on('add', function(e) {
+                window.route_bounds = e.target.getBounds();
+                window.map.fitBounds(e.target.getBounds());
+            })
+            .addTo(window.map);
+
+        window.chart = plotElevation("graphcontainer", null, null);
+    }
+
+
+    function load_data() {
         const data_href = window.location.href;
         var url = new URL(data_href);
         var route_id = url.searchParams.get('route_id');
@@ -504,69 +606,19 @@
         fetch("/gpx/" + route_id)
             .then(response => response.text())
             .then((data) => {
+                localStorage.setItem(
+                    "gpx_route_" + route_id,
+                    JSON.stringify(
+                        {
+                            "route_id": route_id,
+                            "data": data
+                        }
+                    )
+                )
                 window.gpx = new gpxParser();
                 window.gpx.parse(data);
 
-                var geoJson_dom = (new DOMParser()).parseFromString(data, 'text/xml');
-                var geo_json = toGeoJSON.gpx(geoJson_dom);
-
-                window.trackStatistics = point_statistics(window.gpx.tracks[0].points);
-                const accumulated_elevation_positive = trackStatistics.elevationPositiveAccumulated;
-                const accumulated_elevation_negative = trackStatistics.elevationNegativeAccumulated;
-                get_currentPosition();
-
-                document.getElementById("totalDistance").innerHTML = `${Number(window.gpx.tracks[0].distance.total/1000).toFixed(2)}`;
-                document.getElementById("totalElevationUp").innerHTML = `${Number(accumulated_elevation_positive[accumulated_elevation_positive.length -1]).toFixed(2)}`;
-                document.getElementById("totalElevationDown").innerHTML = `${Number(accumulated_elevation_negative[accumulated_elevation_negative.length -1]).toFixed(2)}`;
-
-                var elevation_increasing_color = localStorage.getItem("color_increasing");
-                if (elevation_increasing_color === null) {
-                    elevation_increasing_color = ELEVATION_INCREASING;
-                    localStorage.setItem("color_increasing", elevation_increasing_color);
-                }
-                var elevation_decreasing_color = localStorage.getItem("color_decreasing");
-                if (elevation_decreasing_color === null) {
-                    elevation_decreasing_color = ELEVATION_DECREASING;
-                    localStorage.setItem("color_decreasing", elevation_decreasing_color);
-                }
-                var elevation_neutral_color = localStorage.getItem("color_neutral");
-                if (elevation_neutral_color === null) {
-                    elevation_neutral_color = ELEVATION_NEUTRAL;
-                    localStorage.setItem("color_neutral", elevation_neutral_color);
-                }
-
-
-                var custom_json = geo_json_grouped_by_elevation_change(geo_json);
-
-                if (window.geo_json_layer !== undefined) {
-                    window.map.removeLayer(window.geo_json_layer);
-                }
-
-                window.geo_json_layer = L.geoJson(custom_json, {
-                    style: function (feature) {
-                        var color = "#000000";
-                        if (feature.properties.elevation > 0) {
-                            color = elevation_increasing_color;
-                        } else if (feature.properties.elevation < 0) {
-                            color = elevation_decreasing_color;
-                        } else {
-                            color = elevation_neutral_color;
-                        }
-                        return {
-                            "color": color,
-                            "opacity": 1,
-                            "weight": 5
-                        }}
-                });
-
-                window.geo_json_layer
-                    .on('add', function(e) {
-                        console.log(e.target.getBounds());
-                        window.map.fitBounds(e.target.getBounds());
-                    })
-                    .addTo(window.map);
-
-                window.chart = plotElevation("graphcontainer", null, null);
+                visualize_map(route_id);
             });
     }
 
