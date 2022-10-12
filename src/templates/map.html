@@ -345,45 +345,57 @@
 </script>
 <script>
 
-    document.querySelector("fieldset").addEventListener("change", (e) => {
-        if (e.target.value === "public_transport") {
+    async function visualize_public_transport_stations() {
+        const data_href = window.location.href;
+        var url = new URL(data_href);
+        var route_id = url.searchParams.get('route_id');
 
-            var greenIcon = new L.icon({iconUrl: 'static/trainstation.png', iconSize: [16, 16]});
-            var search_obj = {
-                min_lon: window.route_bounds._southWest.lng,
-                max_lon: window.route_bounds._northEast.lng,
-                min_lat: window.route_bounds._southWest.lat,
-                max_lat: window.route_bounds._northEast.lat
-            };
-            var search_params = new URLSearchParams(search_obj);
-            if ((window.layerGroup === undefined) || (window.layerGroup === null)) {
-                fetch("/osm/trainstation?" + search_params)
-                    .then((response) => response.json())
-                    .then((data) => {
-                        window.station_data = data;
-                        window.layerGroup = L.layerGroup();
-                        data.forEach((elm) => {
-                            let marker = L.marker(
-                                [elm.latitude, elm.longitude],
-                                {icon: greenIcon}
-                            ).bindPopup(
-                                JSON.stringify(elm.tags, " ", 2)
-                            );
-                            window.layerGroup.addLayer(marker);
-                        });
-                        window.layerGroup.addTo(window.map);
+        var greenIcon = new L.icon({iconUrl: 'static/trainstation.png', iconSize: [16, 16]});
+        var search_obj = {
+            min_lon: window.route_bounds._southWest.lng,
+            max_lon: window.route_bounds._northEast.lng,
+            min_lat: window.route_bounds._southWest.lat,
+            max_lat: window.route_bounds._northEast.lat
+        };
+        var search_params = new URLSearchParams(search_obj);
+        if ((window.layerGroup === undefined) || (window.layerGroup === null)) {
+            fetch("/osm/trainstation?" + search_params)
+                .then((response) => response.json())
+                .then((data) => {
+                    localStorage.setItem("public_transport_" + route_id, JSON.stringify(data));
+                    window.station_data = data;
+                    window.layerGroup = L.layerGroup();
+                    data.forEach((elm) => {
+                        let marker = L.marker(
+                            [elm.latitude, elm.longitude],
+                            {icon: greenIcon}
+                        ).bindPopup(
+                            JSON.stringify(elm.tags, " ", 2)
+                        );
+                        window.layerGroup.addLayer(marker);
                     });
-            } else {
-                window.layerGroup.addTo(window.map);
-            }
+                    window.layerGroup.addTo(window.map);
+                });
+        } else {
+            window.layerGroup.addTo(window.map);
+        }
+    }
+
+
+    document.querySelector("fieldset").addEventListener("change", async (e) => {
+        const data_href = window.location.href;
+        var url = new URL(data_href);
+        var route_id = url.searchParams.get('route_id');
+        if (e.target.value === "public_transport") {
+            const resp = await visualize_public_transport_stations();
+            visualize_map(route_id);
 
         } else {
             console.log("new fieldset value", e.target.value);
             if ((window.layerGroup !== undefined) && (window.layerGroup !== null)) {
                 window.map.removeLayer(window.layerGroup);
-
             }
-
+            visualize_map(route_id);
         }
     });
 
@@ -564,8 +576,14 @@
             localStorage.setItem("color_neutral", elevation_neutral_color);
         }
 
-
-        var custom_json = geo_json_grouped_by_elevation_change(geo_json);
+        var custom_json = null;
+        if (document.querySelector("input[type=radio][name=visualization_type]:checked").value === "height_change") {
+            console.log("height change")
+            custom_json = geo_json_grouped_by_elevation_change(geo_json);
+        } else {
+            console.log("grouping by json")
+            custom_json = geo_json_grouped_by_distance_to_train_station(geo_json, route_id);
+        }
         if (window.geo_json_layer !== undefined) {
             window.map.removeLayer(window.geo_json_layer);
         }
@@ -573,18 +591,30 @@
         window.geo_json_layer = L.geoJson(custom_json, {
             style: function (feature) {
                 var color = "#000000";
-                if (feature.properties.elevation > 0) {
-                    color = elevation_increasing_color;
-                } else if (feature.properties.elevation < 0) {
-                    color = elevation_decreasing_color;
+                if (document.querySelector("input[type=radio][name=visualization_type]:checked").value === "height_change") {
+                    if (feature.properties.elevation > 0) {
+                        color = elevation_increasing_color;
+                    } else if (feature.properties.elevation < 0) {
+                        color = elevation_decreasing_color;
+                    } else {
+                        color = elevation_neutral_color;
+                    }
                 } else {
-                    color = elevation_neutral_color;
+                    console.log(feature.properties)
+                    if (feature.properties.group === 0) {
+                        color = '#00FF00';
+                    } else if (feature.properties.group === 1) {
+                        color = '#FFFF00';
+                    } else {
+                        color = '#FF0000';
+                    }
                 }
                 return {
                     "color": color,
                     "opacity": 1,
                     "weight": 5
-                }}
+                }
+            }
         });
 
         window.geo_json_layer
