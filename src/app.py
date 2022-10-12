@@ -22,12 +22,12 @@ print(os.getcwd())
 
 app = Flask(
     __name__,
-    static_folder=os.getcwd() + "/static/"
+    static_folder="/static/"
 )
 app.secret_key = b"\xdd\xd5\xe7\xf1\x9f\xa0I\x03\xa8(\x16\xab\xff*|\x08\x9e\x8e\x14\x99\xb6*\xe9E5y\xb3\xcb\xee\x13\xa2$"
 
 
-app.strava_config = toml.load("/home/meyerjo/code/private/strava_downloader/config/config_strava_downloader.toml")
+app.strava_config = toml.load("./config_strava_downloader.toml")
 
 
 @app.template_filter()
