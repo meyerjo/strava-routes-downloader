@@ -3,3 +3,4 @@ stravalib==0.10.4
 requests==2.28.1
 toml==0.10.2
 pyuwsgi
+OSMPythonTools
