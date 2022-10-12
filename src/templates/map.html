@@ -160,23 +160,41 @@
                             <i class="bi bi-gear-fill"></i>
                         </button>
                         <ul class="dropdown-menu">
+                            <h6 class="dropdown-header">Simulate Location</h6>
                             <li><a class="dropdown-item drop" data-value="random-atlength" href="#">Random on path</a></li>
                             <li><a class="dropdown-item drop" data-value="random-along" href="#">Random along the path</a></li>
                             <li><a class="dropdown-item drop" data-value="random" href="#">Random (within view)</a></li>
                             <li><hr class="dropdown-divider"></li>
+                            <h6 class="dropdown-header">Color-Scheme Elevation</h6>
                             <li>
-                                <label>
+                                <label class="dropdown-item" style="vertical-align: middle">
                                     <input type="color" id="elevation_up" class="elevation" value="#FF0000" /> Color Up
                                 </label>
                             </li>
                             <li>
-                                <label>
+                                <label class="dropdown-item">
                                     <input type="color" id="elevation_down" class="elevation" value="#00FF00" /> Color Down
                                 </label>
                             </li>
                             <li>
-                                <label>
+                                <label class="dropdown-item">
                                     <input type="color" id="elevation_neutral" class="elevation" value="#808080" /> Color Neutral
+                                </label>
+                            </li>
+                            <h6 class="dropdown-header">Color-Scheme Public Transit</h6>
+                            <li>
+                                <label class="dropdown-item" style="vertical-align: middle">
+                                    <input type="color" id="close_distance" class="public_transport" value="#00FF00" /> Color Up
+                                </label>
+                            </li>
+                            <li>
+                                <label class="dropdown-item">
+                                    <input type="color" id="middle_distance" class="public_transport" value="#FFFF00" /> Color Down
+                                </label>
+                            </li>
+                            <li>
+                                <label class="dropdown-item">
+                                    <input type="color" id="long_distance" class="public_transport" value="#FF0000" /> Color Neutral
                                 </label>
                             </li>
                         </ul>
@@ -258,7 +276,10 @@
 <script src="{{ url_for('static', filename='js/track_distances.js') }}"></script>
 <script src="{{ url_for('static', filename='js/ui/toggle_buttons.js') }}"></script>
 <script src="{{ url_for('static', filename='js/ui/drop_fake_location.js') }}"></script>
+<script src="{{ url_for('static', filename='js/ui/plot_lines.js') }}"></script>
 <script src="{{ url_for('static', filename='js/data/gpx_tracks.js') }}"></script>
+<script src="{{ url_for('static', filename='js/data/public_transport.js') }}"></script>
+<script src="{{ url_for('static', filename='js/ui/geolocate_features.js') }}"></script>
 
 <script>
     <!-- Threshold away from track -->
@@ -268,36 +289,10 @@
     const ELEVATION_DECREASING = "#00FF00";
     const ELEVATION_NEUTRAL = "#808080";
 
-    function retrievePlotlines(currentPosition = null, clickLocation = null) {
-        var closest_point_on_track = null;
-        var plotLines = [];
-        if ((currentPosition !== undefined) && (currentPosition !== null)) {
-            closest_point_on_track = findClosestPointOnTrack(currentPosition.latitude, currentPosition.longitude);
-            if (closest_point_on_track.metricDistance < AWAY_FROM_TRACK_THRESHOLD) {
-                plotLines.push(
-                    {
-                        color: '#00FF00', // Red
-                        width: 2,
-                        value: closest_point_on_track.index // Position, you'll have to translate this to the values on your x axis
-                    }
-                );
-            }
-        }
+    const PUBLIC_TRANSPORT_SHORT_DISTANCE = "#00FF00";
+    const PUBLIC_TRANSPORT_MIDDLE_DISTANCE = "#FFFF00";
+    const PUBLIC_TRANSPORT_LONG_DISTANCE = "#FF0000";
 
-        if ((clickLocation !== undefined) && (clickLocation !== null)) {
-            closest_point_on_track = findClosestPointOnTrack(clickLocation.latitude, clickLocation.longitude);
-            if (closest_point_on_track.metricDistance < AWAY_FROM_TRACK_THRESHOLD) {
-                plotLines.push(
-                    {
-                        color: '#FF0000', // Red
-                        width: 2,
-                        value: closest_point_on_track.index // Position, you'll have to translate this to the values on your x axis
-                    }
-                )
-            }
-        }
-        return plotLines;
-    }
 
     function updatePositionSpecificCues() {
         if (window.currentPosition !== undefined) {
@@ -350,32 +345,25 @@
         var url = new URL(data_href);
         var route_id = url.searchParams.get('route_id');
 
+        const response = await retrieve_public_transport_stations(route_id, window.route_bounds);
+        window.station_data = response;
+
         var greenIcon = new L.icon({iconUrl: 'static/trainstation.png', iconSize: [16, 16]});
-        var search_obj = {
-            min_lon: window.route_bounds._southWest.lng,
-            max_lon: window.route_bounds._northEast.lng,
-            min_lat: window.route_bounds._southWest.lat,
-            max_lat: window.route_bounds._northEast.lat
-        };
-        var search_params = new URLSearchParams(search_obj);
         if ((window.layerGroup === undefined) || (window.layerGroup === null)) {
-            fetch("/osm/trainstation?" + search_params)
-                .then((response) => response.json())
-                .then((data) => {
-                    localStorage.setItem("public_transport_" + route_id, JSON.stringify(data));
-                    window.station_data = data;
-                    window.layerGroup = L.layerGroup();
-                    data.forEach((elm) => {
-                        let marker = L.marker(
-                            [elm.latitude, elm.longitude],
-                            {icon: greenIcon}
-                        ).bindPopup(
-                            JSON.stringify(elm.tags, " ", 2)
-                        );
-                        window.layerGroup.addLayer(marker);
-                    });
-                    window.layerGroup.addTo(window.map);
-                });
+            window.layerGroup = L.layerGroup();
+            response.forEach((elm) => {
+                let marker = L.marker(
+                    [elm.latitude, elm.longitude],
+                    {icon: greenIcon}
+                ).bindPopup(
+                    `<b>Name:</b> ${elm.tags.name}<br/>` +
+                    `<b>Operator:</b> ${elm.tags.operator}<br/>` +
+                    `<b>Type:</b> ${elm.tags.public_transport}<br/>` +
+                    `Details: ${JSON.stringify(elm.tags, " ", 2)}`
+                );
+                window.layerGroup.addLayer(marker);
+            });
+            window.layerGroup.addTo(window.map);
         } else {
             window.layerGroup.addTo(window.map);
         }
@@ -387,11 +375,11 @@
         var url = new URL(data_href);
         var route_id = url.searchParams.get('route_id');
         if (e.target.value === "public_transport") {
+            window.map.removeLayer(window.geo_json_layer);
             const resp = await visualize_public_transport_stations();
             visualize_map(route_id);
-
         } else {
-            console.log("new fieldset value", e.target.value);
+            window.map.removeLayer(window.geo_json_layer);
             if ((window.layerGroup !== undefined) && (window.layerGroup !== null)) {
                 window.map.removeLayer(window.layerGroup);
             }
@@ -406,20 +394,24 @@
         map.setView([window.currentPosition.latitude, window.currentPosition.longitude], 16);
     });
 
-    document.querySelectorAll("input[type='color'].elevation").forEach((inp) => {
+    document.querySelectorAll("input[type='color']").forEach((inp) => {
         inp.addEventListener("change", function () {
-            console.log(this.id, this.value);
             if (this.id === "elevation_up") {
                 localStorage.setItem("color_increasing", this.value);
             } else if (this.id === "elevation_down") {
                 localStorage.setItem("color_decreasing", this.value);
             } else if (this.id === "elevation_neutral") {
                 localStorage.setItem("color_neutral", this.value);
+            } else if (this.id === "close_distance") {
+                localStorage.setItem("color_public_transport_close_distance", this.value);
+            } else if (this.id === "middle_distance") {
+                localStorage.setItem("color_public_transport_middle_distance", this.value);
+            } else if (this.id === "long_distance") {
+                localStorage.setItem("color_public_transport_long_distance", this.value);
             }
             load_data();
         });
     });
-
 
     document.querySelectorAll(".draggable a.close").forEach((btn) => {
         btn.addEventListener(
@@ -450,40 +442,10 @@
 
 </script>
 <script>
-    var moving_marker = null;
-    var markerCurrentPosition = null;
-    var locationMarker = null;
-    const options = {
-        enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 0
-    };
-
-    function success(pos) {
-        const crd = pos.coords;
-        window.currentPosition = crd
-        console.log(`Your current position is: Latitude : ${crd.latitude}; Longitude: ${crd.longitude}; More or less ${crd.accuracy} meters.`);
-
-        // Show a market at the position of the Eiffel Tower
-        locationMarker = L.marker([crd.latitude, crd.longitude]);
-        locationMarker.addTo(window.map);
-        updatePositionSpecificCues();
-    }
-
-    function error(err) {
-        console.warn(`ERROR(${err.code}): ${err.message}`);
-    }
-
-
-    function get_currentPosition() {
-        navigator.geolocation.getCurrentPosition(success, error, options);
-    }
-
     document.getElementById("locate").addEventListener('click', (e) => {
         e.preventDefault();
         get_currentPosition();
     });
-
 </script>
 <script>
 
@@ -538,6 +500,65 @@
     if (elevation_neutral_color !== null) {
         document.getElementById("elevation_neutral").value = elevation_neutral_color;
     }
+    var color_public_transport_close_distance = localStorage.getItem("color_public_transport_close_distance");
+    if (color_public_transport_close_distance !== null) {
+        document.getElementById("close_distance").value = color_public_transport_close_distance;
+    }
+    var color_public_transport_middle_distance = localStorage.getItem("color_public_transport_middle_distance");
+    if (color_public_transport_middle_distance !== null) {
+        document.getElementById("middle_distance").value = color_public_transport_middle_distance;
+    }
+    var color_public_transport_long_distance = localStorage.getItem("color_public_transport_long_distance");
+    if (color_public_transport_long_distance !== null) {
+        document.getElementById("long_distance").value = color_public_transport_long_distance;
+    }
+
+    function getColors() {
+        var elevation_increasing_color = localStorage.getItem("color_increasing");
+        if (elevation_increasing_color === null) {
+            elevation_increasing_color = ELEVATION_INCREASING;
+            localStorage.setItem("color_increasing", elevation_increasing_color);
+        }
+        var elevation_decreasing_color = localStorage.getItem("color_decreasing");
+        if (elevation_decreasing_color === null) {
+            elevation_decreasing_color = ELEVATION_DECREASING;
+            localStorage.setItem("color_decreasing", elevation_decreasing_color);
+        }
+        var elevation_neutral_color = localStorage.getItem("color_neutral");
+        if (elevation_neutral_color === null) {
+            elevation_neutral_color = ELEVATION_NEUTRAL;
+            localStorage.setItem("color_neutral", elevation_neutral_color);
+        }
+
+        var color_public_transport_close_distance = localStorage.getItem("color_public_transport_close_distance");
+        if (color_public_transport_close_distance === null) {
+            color_public_transport_close_distance = PUBLIC_TRANSPORT_SHORT_DISTANCE;
+            localStorage.setItem("color_public_transport_close_distance", elevation_neutral_color);
+        }
+        var color_public_transport_middle_distance = localStorage.getItem("color_public_transport_middle_distance");
+        if (color_public_transport_middle_distance === null) {
+            color_public_transport_middle_distance = PUBLIC_TRANSPORT_MIDDLE_DISTANCE;
+            localStorage.setItem("color_public_transport_middle_distance", color_public_transport_middle_distance);
+        }
+        var color_public_transport_long_distance = localStorage.getItem("color_public_transport_long_distance");
+        if (color_public_transport_long_distance === null) {
+            color_public_transport_long_distance = PUBLIC_TRANSPORT_LONG_DISTANCE;
+            localStorage.setItem("color_public_transport_long_distance", color_public_transport_long_distance);
+        }
+        return {
+            elevation: {
+                increasing: elevation_increasing_color,
+                decreasing: elevation_decreasing_color,
+                neutral: elevation_neutral_color
+            },
+            public_transport: {
+                short: color_public_transport_close_distance,
+                middle: color_public_transport_middle_distance,
+                long: color_public_transport_long_distance
+            }
+        }
+    }
+
 </script>
 
 
@@ -560,29 +581,16 @@
         document.getElementById("totalElevationUp").innerHTML = `${Number(accumulated_elevation_positive[accumulated_elevation_positive.length -1]).toFixed(2)}`;
         document.getElementById("totalElevationDown").innerHTML = `${Number(accumulated_elevation_negative[accumulated_elevation_negative.length -1]).toFixed(2)}`;
 
-        var elevation_increasing_color = localStorage.getItem("color_increasing");
-        if (elevation_increasing_color === null) {
-            elevation_increasing_color = ELEVATION_INCREASING;
-            localStorage.setItem("color_increasing", elevation_increasing_color);
-        }
-        var elevation_decreasing_color = localStorage.getItem("color_decreasing");
-        if (elevation_decreasing_color === null) {
-            elevation_decreasing_color = ELEVATION_DECREASING;
-            localStorage.setItem("color_decreasing", elevation_decreasing_color);
-        }
-        var elevation_neutral_color = localStorage.getItem("color_neutral");
-        if (elevation_neutral_color === null) {
-            elevation_neutral_color = ELEVATION_NEUTRAL;
-            localStorage.setItem("color_neutral", elevation_neutral_color);
-        }
-
         var custom_json = null;
+        console.log(route_id, document.querySelector("input[type=radio][name=visualization_type]:checked").value);
         if (document.querySelector("input[type=radio][name=visualization_type]:checked").value === "height_change") {
             console.log("height change")
             custom_json = geo_json_grouped_by_elevation_change(geo_json);
-        } else {
+        } else if (document.querySelector("input[type=radio][name=visualization_type]:checked").value === "public_transport") {
             console.log("grouping by json")
             custom_json = geo_json_grouped_by_distance_to_train_station(geo_json, route_id);
+        } else {
+            console.error("unknown input box checked")
         }
         if (window.geo_json_layer !== undefined) {
             window.map.removeLayer(window.geo_json_layer);
@@ -590,30 +598,7 @@
 
         window.geo_json_layer = L.geoJson(custom_json, {
             style: function (feature) {
-                var color = "#000000";
-                if (document.querySelector("input[type=radio][name=visualization_type]:checked").value === "height_change") {
-                    if (feature.properties.elevation > 0) {
-                        color = elevation_increasing_color;
-                    } else if (feature.properties.elevation < 0) {
-                        color = elevation_decreasing_color;
-                    } else {
-                        color = elevation_neutral_color;
-                    }
-                } else {
-                    console.log(feature.properties)
-                    if (feature.properties.group === 0) {
-                        color = '#00FF00';
-                    } else if (feature.properties.group === 1) {
-                        color = '#FFFF00';
-                    } else {
-                        color = '#FF0000';
-                    }
-                }
-                return {
-                    "color": color,
-                    "opacity": 1,
-                    "weight": 5
-                }
+                return colorize_feature(feature);
             }
         });
 
