@@ -132,7 +132,12 @@
                                 <ul class="dropdown-menu">
                                     <li>
                                         <span class="dropdown-item">
-                                        Elavation Gain: {{ route.elevation_gain }}
+                                            <a href="{{ url_for('show_map') }}?route_id={{ route.id }}">Route Companion</a>
+                                        </span>
+                                    </li>
+                                    <li>
+                                        <span class="dropdown-item">
+                                        Elevation Gain: {{ route.elevation_gain }}
                                         </span>
                                     </li>
                                     <li>
