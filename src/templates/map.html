@@ -622,10 +622,8 @@
         var custom_json = null;
         console.log(route_id, document.querySelector("input[type=radio][name=visualization_type]:checked").value);
         if (document.querySelector("input[type=radio][name=visualization_type]:checked").value === "height_change") {
-            console.log("height change")
             custom_json = geo_json_grouped_by_elevation_change(geo_json);
         } else if (document.querySelector("input[type=radio][name=visualization_type]:checked").value === "public_transport") {
-            console.log("grouping by json")
             custom_json = geo_json_grouped_by_distance_to_train_station(geo_json, route_id);
         } else {
             console.error("unknown input box checked")
