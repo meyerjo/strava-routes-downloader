@@ -19,15 +19,17 @@ from utils.gpx import reverse_gpx_trackpts
 import os
 print(os.getcwd())
 
+STATIC_FOLDER = "/static/"
+TOML_STRAVA_CONFIGURATION="./config_strava_downloader.toml"
 
-app = Flask(
-    __name__,
-    static_folder="/static/"
-)
+try:
+    from local_settings import *
+except ImportError as e:
+    print(f"ImportError: {e}")
+
+app = Flask(__name__, static_folder=STATIC_FOLDER)
 app.secret_key = b"\xdd\xd5\xe7\xf1\x9f\xa0I\x03\xa8(\x16\xab\xff*|\x08\x9e\x8e\x14\x99\xb6*\xe9E5y\xb3\xcb\xee\x13\xa2$"
-
-
-app.strava_config = toml.load("./config_strava_downloader.toml")
+app.strava_config = toml.load(TOML_STRAVA_CONFIGURATION)
 
 
 @app.template_filter()
