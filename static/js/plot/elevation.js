@@ -1,4 +1,31 @@
 
+function removeMarker() {
+    if (clickedMarker !== null) {
+        window.map.removeLayer(clickedMarker);
+        clickedMarker = null;
+        document.getElementById("local_height_from_marker_position").disabled = true;
+        document.getElementById("local_height_from_geoposition").checked = true;
+    }
+}
+
+function add_marker_to_map(latitude, longitude) {
+    if (clickedMarker !== null) {
+        window.map.removeLayer(clickedMarker);
+    }
+    clickedMarker = L.marker(
+        [
+            latitude, longitude
+        ], {
+            icon: markerIcon
+        }
+    ).bindPopup(
+        "<button class='btn btn-secondary dismissButton' onclick='removeMarker()'>Dismiss</button>"
+    );
+
+    document.getElementById("local_height_from_marker_position").disabled = false;
+    clickedMarker.addTo(window.map);
+}
+
 function plotElevation(element_id, start_id = null, end_id = null) {
     if (start_id === null) {
         start_id = 0;
@@ -19,10 +46,20 @@ function plotElevation(element_id, start_id = null, end_id = null) {
         chart: {
             events: {
                 click: function(e) {
-                    console.log(
-                        e.xAxis[0].value,
-                        e.yAxis[0].value
+                    var position_on_track = window.gpx.tracks[0].points[Math.floor(e.xAxis[0].value)];
+                    add_marker_to_map(position_on_track.lat, position_on_track.lon);
+                    var plotLines = retrievePlotlines(
+                        window.currentPosition,
+                        {
+                            latitude: position_on_track.lat,
+                            longitude: position_on_track.lon
+                        }
                     );
+                    window.chart.update({
+                        xAxis: {
+                            plotLines: plotLines
+                        },
+                    });
                 }
             }
         },
@@ -63,7 +100,7 @@ function plotElevation(element_id, start_id = null, end_id = null) {
                     `Elevation down done: ${Number(accumulated_elevation_negative[this.x]).toFixed(2)} m<br/>` +
                     `change: ${Number((heightDifference/distance_to_last_5)*100).toFixed(2)} %<br/>` +
                     `height difference: ${Number(heightDifference).toFixed(2)}<br/>` +
-                    `distance: ${Number(distance_to_last_5).toFixed(2)}<br/>`
+                    `distance: ${Number(distance_to_last_5).toFixed(2)}<br/>` +
                     `look back distance: ${look_back_distance}<br/>`
                     ;
             }

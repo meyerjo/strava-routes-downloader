@@ -29,7 +29,19 @@ function toggle_local_elevation_button() {
     if ((window.currentPosition === undefined) || (window.currentPosition === null)) {
         return;
     }
-    var closest_point_on_track = findClosestPointOnTrack(window.currentPosition.latitude, window.currentPosition.longitude);
+
+    var position = null;
+    var input_check_value = document.querySelector("input[type='radio'][name='radioHeightProfileFrom']:checked").value;
+    if (input_check_value  === "from_location") {
+        position = window.currentPosition;
+    } else if (input_check_value === "marker_location") {
+        position = {
+            longitude: clickedMarker._latlng.lng,
+            latitude: clickedMarker._latlng.lat
+        };
+    }
+
+    var closest_point_on_track = findClosestPointOnTrack(position.latitude, position.longitude);
     if (closest_point_on_track.metricDistance > AWAY_FROM_TRACK_THRESHOLD) {
         if (window.localElevationGraph !== null) {
             window.localElevationGraph.destroy();

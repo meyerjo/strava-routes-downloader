@@ -257,10 +257,30 @@
             </div>
             <div class="draggable_content">
                 <div id="localElevationGraph"></div>
-                <button type="button" class="btn btn-primary distanceElevationProfile" value="1"><span class="badge text-bg-secondary">1 km</span></button>
-                <button type="button" class="btn btn-primary distanceElevationProfile" value="2"><span class="badge text-bg-secondary">2 km</span></button>
-                <button type="button" class="btn btn-primary distanceElevationProfile" value="3"><span class="badge text-bg-secondary">3 km</span></button>
-                <button type="button" class="btn btn-primary distanceElevationProfile" value="next_peak"><span class="badge text-bg-secondary">Next peak</span></button>
+                <div class="row">
+                    <div class="col-sm">
+                        <button type="button" class="btn btn-primary distanceElevationProfile" value="1"><span class="badge text-bg-secondary">1 km</span></button>
+                        <button type="button" class="btn btn-primary distanceElevationProfile" value="2"><span class="badge text-bg-secondary">2 km</span></button>
+                        <button type="button" class="btn btn-primary distanceElevationProfile" value="3"><span class="badge text-bg-secondary">3 km</span></button>
+                        <button type="button" class="btn btn-primary distanceElevationProfile" value="next_peak"><span class="badge text-bg-secondary">Next peak</span></button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="radioHeightProfileFrom" id="local_height_from_geoposition" value="from_location" checked>
+                            <label class="form-check-label" for="local_height_from_geoposition">
+                                From location
+                            </label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="radioHeightProfileFrom" id="local_height_from_marker_position" value="marker_location" disabled>
+                            <label class="form-check-label" for="local_height_from_marker_position">
+                                From placed position
+                            </label>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -301,6 +321,7 @@
     var moving_marker = null;
     var markerCurrentPosition = null;
     var clickedMarker = null;
+    var markerIcon = new L.icon({iconUrl: 'static/marker-icon-red.png', iconSize: [25, 41]});
 
 
     function updatePositionSpecificCues() {
@@ -484,12 +505,7 @@
     map.on('click', function(e) {
         var popLocation= e.latlng;
 
-        if (clickedMarker !== null) {
-            window.map.removeLayer(clickedMarker);
-        }
-        var clickedMarker = L.marker(
-
-        )
+        add_marker_to_map(popLocation.lat, popLocation.lng);
 
         var plotLines = retrievePlotlines(
             window.currentPosition,
