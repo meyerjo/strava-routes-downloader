@@ -381,13 +381,13 @@
         const response = await retrieve_public_transport_stations(route_id, window.route_bounds);
         window.station_data = response;
 
-        var greenIcon = new L.icon({iconUrl: 'static/trainstation.png', iconSize: [16, 16]});
+        var trainIcon = new L.icon({iconUrl: 'static/trainstation.png', iconSize: [16, 16]});
         if ((window.layerGroup === undefined) || (window.layerGroup === null)) {
             window.layerGroup = L.layerGroup();
             response.forEach((elm) => {
                 let marker = L.marker(
                     [elm.latitude, elm.longitude],
-                    {icon: greenIcon}
+                    {icon: trainIcon}
                 ).bindPopup(
                     `<b>Name:</b> ${elm.tags.name}<br/>` +
                     `<b>Operator:</b> ${elm.tags.operator}<br/>` +
