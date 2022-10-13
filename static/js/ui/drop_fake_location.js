@@ -19,9 +19,14 @@ function drop_gps_location(e) {
             updatePositionSpecificCues();
             break;
         case "random-along":
+            var random_scale = 0.05 * (document.getElementById("noise_scale").value / 250);
+            if ((random_scale === undefined) || (random_scale === null)) {
+                random_scale = 0.05;
+            }
+
             var positionId = Math.floor(Math.random()*window.gpx.tracks[0].points.length);
-            const newLat = window.gpx.tracks[0].points[positionId].lat + Math.random() * 0.05;
-            const newLon = window.gpx.tracks[0].points[positionId].lon + Math.random() * 0.05;
+            const newLat = window.gpx.tracks[0].points[positionId].lat + (Math.random()-0.5) * random_scale;
+            const newLon = window.gpx.tracks[0].points[positionId].lon + (Math.random()-0.5) * random_scale;
             window.currentPosition = {
                 accuracy: 0,
                 altitude: null,

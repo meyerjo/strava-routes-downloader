@@ -164,6 +164,11 @@
                             <li><a class="dropdown-item drop" data-value="random-atlength" href="#">Random on path</a></li>
                             <li><a class="dropdown-item drop" data-value="random-along" href="#">Random along the path</a></li>
                             <li><a class="dropdown-item drop" data-value="random" href="#">Random (within view)</a></li>
+                            <li>
+                                <label class="dropdown-item">
+                                    <input type="range" min="0" max="500" value="250" id="noise_scale" /> Noise Scale <span id="noiseScaleElement">0.05</span>
+                                </label>
+                            </li>
                             <li><hr class="dropdown-divider"></li>
                             <h6 class="dropdown-header">Color-Scheme Elevation</h6>
                             <li>
@@ -292,6 +297,10 @@
     const PUBLIC_TRANSPORT_SHORT_DISTANCE = "#00FF00";
     const PUBLIC_TRANSPORT_MIDDLE_DISTANCE = "#FFFF00";
     const PUBLIC_TRANSPORT_LONG_DISTANCE = "#FF0000";
+
+    var moving_marker = null;
+    var markerCurrentPosition = null;
+    var clickedMarker = null;
 
 
     function updatePositionSpecificCues() {
@@ -440,6 +449,12 @@
         btn.addEventListener("click", toggle_local_elevation_button);
     });
 
+    document.getElementById("noise_scale").addEventListener(
+        "change", function () {
+            document.getElementById("noiseScaleElement").innerHTML = `${Number(0.05 * (this.value / 250)).toFixed(3)}`;
+        }
+    )
+
 </script>
 <script>
     document.getElementById("locate").addEventListener('click', (e) => {
@@ -468,6 +483,13 @@
 
     map.on('click', function(e) {
         var popLocation= e.latlng;
+
+        if (clickedMarker !== null) {
+            window.map.removeLayer(clickedMarker);
+        }
+        var clickedMarker = L.marker(
+
+        )
 
         var plotLines = retrievePlotlines(
             window.currentPosition,
