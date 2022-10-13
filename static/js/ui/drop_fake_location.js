@@ -1,4 +1,10 @@
 function drop_gps_location(e) {
+    if ((locationMarker === undefined) || (locationMarker === null)) {
+        locationMarker = L.marker(
+            [0, 0]
+        );
+        locationMarker.addTo(window.map);
+    }
     const element = e.target.dataset['value'];
     switch(element) {
         case "random-atlength":

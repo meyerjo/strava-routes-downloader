@@ -268,7 +268,7 @@
                 <div class="row">
                     <div class="col-sm">
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="radioHeightProfileFrom" id="local_height_from_geoposition" value="from_location" checked>
+                            <input class="form-check-input" type="radio" name="radioHeightProfileFrom" id="local_height_from_geoposition" value="from_location" checked disabled>
                             <label class="form-check-label" for="local_height_from_geoposition">
                                 From location
                             </label>
@@ -326,6 +326,7 @@
 
     function updatePositionSpecificCues() {
         if (window.currentPosition !== undefined) {
+            document.getElementById("local_height_from_geoposition").disabled = false;
             var closest_point_on_track = findClosestPointOnTrack(window.currentPosition.latitude, window.currentPosition.longitude);
             document.getElementById("currentPosTotalElevationUp").innerHTML = `${Number(trackStatistics.elevationPositiveAccumulated[closest_point_on_track.index]).toFixed(2)}`;
             document.getElementById("currentPosTotalElevationDown").innerHTML = `${Number(trackStatistics.elevationNegativeAccumulated[closest_point_on_track.index]).toFixed(2)}`;
@@ -365,6 +366,8 @@
                     plotLines: plotLines
                 },
             });
+        } else {
+            document.getElementById("local_height_from_geoposition").disabled = true;
         }
     }
 </script>

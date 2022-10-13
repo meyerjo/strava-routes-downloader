@@ -14,6 +14,7 @@ function success(pos) {
     // Show a market at the position of the Eiffel Tower
     locationMarker = L.marker([crd.latitude, crd.longitude]);
     locationMarker.addTo(window.map);
+    document.getElementById("local_height_from_geoposition").disabled = false;
     updatePositionSpecificCues();
 }
 

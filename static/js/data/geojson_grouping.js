@@ -57,7 +57,6 @@ function geo_json_grouped_by_distance_to_train_station(geo_json_object, route_id
     );
 
     let station_grouping = find_matching_group(stationGroups, bestFit.metricDistance);
-
     var lastGrouping = station_grouping;
     var lastGradient = 0;
     var differences = [];

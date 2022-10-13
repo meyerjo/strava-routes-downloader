@@ -26,10 +26,6 @@ function toggle_global_elevation_button() {
 }
 
 function toggle_local_elevation_button() {
-    if ((window.currentPosition === undefined) || (window.currentPosition === null)) {
-        return;
-    }
-
     var position = null;
     var input_check_value = document.querySelector("input[type='radio'][name='radioHeightProfileFrom']:checked").value;
     if (input_check_value  === "from_location") {
@@ -39,6 +35,9 @@ function toggle_local_elevation_button() {
             longitude: clickedMarker._latlng.lng,
             latitude: clickedMarker._latlng.lat
         };
+    }
+    if ((position === undefined) || (position === null)) {
+        return;
     }
 
     var closest_point_on_track = findClosestPointOnTrack(position.latitude, position.longitude);
