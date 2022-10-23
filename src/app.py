@@ -18,6 +18,7 @@ from OSMPythonTools.overpass import Overpass
 from stravalib import Client
 
 from utils.gpx import reverse_gpx_trackpts
+from utils.osm_stations import retrieve_osm_trainstation
 
 import os
 
@@ -127,39 +128,7 @@ def osm_trainstation():
     max_lat = request.args.get("max_lat", None)
     if min_lon is None or max_lon is None or min_lat is None or max_lat is None:
         raise ("parameters are missing")
-
-    if min_lon > max_lon:
-        min_lon, max_lon = max_lon, min_lon
-    if min_lat > max_lat:
-        min_lat, max_lat = max_lat, min_lat
-    min_lon = float(min_lon)
-    max_lon = float(max_lon)
-    min_lat = float(min_lat)
-    max_lat = float(max_lat)
-
-    bounding_box = f"{min_lat:.6f},{min_lon:.6f},{max_lat:.6f},{max_lon:.6f}"
-    overpass = Overpass()
-    stations = []
-
-    try:
-        queryString = (
-            f'(node["railway"="platform"]({bounding_box});node["railway"="station"]({bounding_box});node["railway"="halt"]({bounding_box});); '
-            f"out;"
-        )
-        res = overpass.query(queryString)
-        if res is not None and res.nodes() is not None:
-            for r in res.nodes():
-                stations.append(
-                    {
-                        "longitude": r.lon(),
-                        "latitude": r.lat(),
-                        "type": r.tags().get("railway", None),
-                        "tags": r.tags(),
-                    }
-                )
-    except BaseException as e:
-        print(e)
-
+    stations = retrieve_osm_trainstation(min_lon, max_lon, min_lat, max_lat)
     return jsonify(stations)
 
 
@@ -263,13 +232,12 @@ def load_activities():
             },
         )
         print(request)
-    update_token()
+
     url_request = f"https://www.strava.com/api/v3/athlete/activities"
     response = requests.get(
         url_request, headers={"Authorization": f"Bearer {session['access_token']}"}
     )
 
-    print(session["access_token"])
     obj = json.loads(response.text)
     return render_template(
         "show_activities.html", **{"response": response.text, "response_obj": obj}
