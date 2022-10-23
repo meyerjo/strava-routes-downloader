@@ -22,6 +22,7 @@ from utils.gpx import reverse_gpx_trackpts
 import os
 
 import tempfile
+
 UPLOAD_FILE = tempfile.gettempdir()
 
 print(os.getcwd())
@@ -80,7 +81,7 @@ def test_login():
     authorize_url = client.authorization_url(
         client_id=app.strava_config["strava"]["client_id"],
         redirect_uri=flask.request.host_url[:-1] + url_for("test_redirect"),
-        scope=["read_all", "activity:read_all", "activity:write"]
+        scope=["read_all", "activity:read_all", "activity:write"],
     )
     return flask.redirect(authorize_url)
 
@@ -141,19 +142,19 @@ def osm_trainstation():
     stations = []
 
     try:
-        queryString = f'(node["railway"="platform"]({bounding_box});node["railway"="station"]({bounding_box});node["railway"="halt"]({bounding_box});); ' \
-                      f"out;"
-        res = overpass.query(
-            queryString
+        queryString = (
+            f'(node["railway"="platform"]({bounding_box});node["railway"="station"]({bounding_box});node["railway"="halt"]({bounding_box});); '
+            f"out;"
         )
+        res = overpass.query(queryString)
         if res is not None and res.nodes() is not None:
             for r in res.nodes():
                 stations.append(
                     {
                         "longitude": r.lon(),
                         "latitude": r.lat(),
-                        "type": r.tags().get('railway', None),
-                        "tags": r.tags()
+                        "type": r.tags().get("railway", None),
+                        "tags": r.tags(),
                     }
                 )
     except BaseException as e:
@@ -221,15 +222,15 @@ def show_map():
     return render_template("map.html")
 
 
-@app.route("/upload", methods=['GET', 'POST'])
+@app.route("/upload", methods=["GET", "POST"])
 def show_upload_page():
     update_token()
     response_obj = None
     if request.method == "POST":
         print(request.files)
-        print(request.form['activity_name'])
-        print(request.form['activity_description'])
-        file = request.files['activity_file']
+        print(request.form["activity_name"])
+        print(request.form["activity_description"])
+        file = request.files["activity_file"]
         filename = secure_filename(file.filename)
         save_path = Path(UPLOAD_FILE) / filename
         file.save(save_path)
@@ -240,11 +241,8 @@ def show_upload_page():
             response = requests.post(
                 url_request,
                 headers={"Authorization": f"Bearer {session['access_token']}"},
-                files={'file': f},
-                params={
-                    "private": True,
-                    "data_type": "fit"
-                }
+                files={"file": f},
+                params={"private": True, "data_type": "fit"},
             )
             print(f"response.text", response.text)
             response_obj = json.loads(response.text)
@@ -256,25 +254,23 @@ def show_upload_page():
 def load_activities():
     update_token()
     if request.method == "POST":
-        id_of_activity = request.form['toggle']
+        id_of_activity = request.form["toggle"]
         response = requests.put(
             f"https://www.strava.com/api/v3/activities/{id_of_activity}",
-            headers={
-                "Authorization": f"Bearer {session['access_token']}"
-            },
+            headers={"Authorization": f"Bearer {session['access_token']}"},
             params={
-                'visibility': 'only_me',
-            }
+                "visibility": "only_me",
+            },
         )
         print(request)
     update_token()
     url_request = f"https://www.strava.com/api/v3/athlete/activities"
-    response = requests.get(url_request, headers={
-        "Authorization": f"Bearer {session['access_token']}"})
+    response = requests.get(
+        url_request, headers={"Authorization": f"Bearer {session['access_token']}"}
+    )
 
-    print(session['access_token'])
+    print(session["access_token"])
     obj = json.loads(response.text)
     return render_template(
         "show_activities.html", **{"response": response.text, "response_obj": obj}
     )
-
