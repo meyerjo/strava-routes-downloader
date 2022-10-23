@@ -1,18 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Route Companion</title>
-    <meta charset="utf-8" />
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-    <!-- Get the leaflet CSS file -->
-    <link rel="stylesheet" href=
-        "https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
-          integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
-          crossorigin="" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
+{% extends "base.html" %}
+
+{% block title %}Route Companion{% endblock %}
+
+{% block extra_header %}
 
     <style>
         #mydiv {
@@ -71,618 +61,626 @@
             background-color: lightgrey;
         }
     </style>
-</head>
-<body style="margin: 0">
-<div class="modal" tabindex="-1" id="myModal">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Too far of track</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>You are too far of track. Thus, this feature is not available.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- Specify the map and it's dimensions -->
+
+{% endblock %}
+{% block extra_body_header %}style="margin:0"{% endblock %}
+
+{% block navigation %}
 <div id="header">
-    <nav class="navbar navbar-expand-lg bg-light">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#" id="locate" title="Locate your device">
-                <i class="bi bi-geo-alt"></i> Locate
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item" title="Total distance">
-                        <i class="bi bi-arrow-left-right"></i> <span id="totalDistance"></span> km
-                    </li>
-                    <li class="nav-item" style="text-align: center" title="Elevation statistics">
-                        <div>
-                            <i class="bi bi-arrow-up-short"></i> <span id="totalElevationUp"></span>
-                        </div>
-                        <div>
-                            <i class="bi bi-arrow-down-short"></i> <span id="totalElevationDown"></span>
-                        </div>
-                    </li>
+        <nav class="navbar navbar-expand-lg bg-light">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#" id="locate" title="Locate your device">
+                    <i class="bi bi-geo-alt"></i> Locate
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item" title="Total distance">
+                            <i class="bi bi-arrow-left-right"></i> <span id="totalDistance"></span> km
+                        </li>
+                        <li class="nav-item" style="text-align: center" title="Elevation statistics">
+                            <div>
+                                <i class="bi bi-arrow-up-short"></i> <span id="totalElevationUp"></span>
+                            </div>
+                            <div>
+                                <i class="bi bi-arrow-down-short"></i> <span id="totalElevationDown"></span>
+                            </div>
+                        </li>
 
-                    <!-- current Position -->
-                    <li class="nav-item disableTooFar" style="text-align: center; vertical-align: middle; margin-left: 20px;" title="Already done">
-                        <i class="bi bi-check-square"></i>
-                    </li>
-                    <li class="nav-item disableTooFar" title="Already done">
-                        <div>
-                            <i class="bi bi-arrow-up-short"></i> <span id="currentPosTotalElevationUp"></span>
-                        </div>
-                        <div>
-                            <i class="bi bi-arrow-down-short"></i>  <span id="currentPosTotalElevationDown"></span>
-                        </div>
-                    </li>
-                    <li class="nav-item disableTooFar" title="Already done">
-                        <i class="bi bi-arrow-left-right"></i> <span id="currenPositionTotalDistance"></span> km
-                    </li>
+                        <!-- current Position -->
+                        <li class="nav-item disableTooFar" style="text-align: center; vertical-align: middle; margin-left: 20px;" title="Already done">
+                            <i class="bi bi-check-square"></i>
+                        </li>
+                        <li class="nav-item disableTooFar" title="Already done">
+                            <div>
+                                <i class="bi bi-arrow-up-short"></i> <span id="currentPosTotalElevationUp"></span>
+                            </div>
+                            <div>
+                                <i class="bi bi-arrow-down-short"></i>  <span id="currentPosTotalElevationDown"></span>
+                            </div>
+                        </li>
+                        <li class="nav-item disableTooFar" title="Already done">
+                            <i class="bi bi-arrow-left-right"></i> <span id="currenPositionTotalDistance"></span> km
+                        </li>
 
 
-                    <li class="nav-item disableTooFar" style="text-align: center; vertical-align: middle; margin-left: 20px;" title="Still to be done">
-                        <i class="bi bi-square"></i>
-                    </li>
-                    <li class="nav-item disableTooFar" title="Still to be done">
-                        <div>
-                            <i class="bi bi-arrow-up-short"></i> <span id="currentPosTotalElevationUpRest"></span>
+                        <li class="nav-item disableTooFar" style="text-align: center; vertical-align: middle; margin-left: 20px;" title="Still to be done">
+                            <i class="bi bi-square"></i>
+                        </li>
+                        <li class="nav-item disableTooFar" title="Still to be done">
+                            <div>
+                                <i class="bi bi-arrow-up-short"></i> <span id="currentPosTotalElevationUpRest"></span>
+                            </div>
+                            <div>
+                                <i class="bi bi-arrow-down-short"></i>  <span id="currentPosTotalElevationDownRest"></span>
+                            </div>
+                        </li>
+                        <li class="nav-item disableTooFar" title="Still to be done">
+                            <i class="bi bi-arrow-left-right"></i> <span id="currentPositionTotalDistanceRest"></span> km
+                        </li>
+                        <li class="nav-item" style="margin-left: 20px;" title="Distance to the track">
+                            <span id="distanceToTrack"></span>
+                        </li>
+                        <li class="nav-item" style="margin-left: 20px;" title="Distance to the track">
+                            <a class="nav-link" href="#" id="zoomInPosition" >
+                                <i class="bi bi-zoom-in"></i> To your position
+                            </a>
+                        </li>
+                    </ul>
+                    <div class="d-flex" role="search">
+                        <div class="btn-group dropstart">
+                            <!-- fix this button -->
+                            <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-gear-fill"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <h6 class="dropdown-header">Simulate Location</h6>
+                                <li><a class="dropdown-item drop" data-value="random-atlength" href="#">Random on path</a></li>
+                                <li><a class="dropdown-item drop" data-value="random-along" href="#">Random along the path</a></li>
+                                <li><a class="dropdown-item drop" data-value="random" href="#">Random (within view)</a></li>
+                                <li>
+                                    <label class="dropdown-item">
+                                        <input type="range" min="0" max="500" value="250" id="noise_scale" /> Noise Scale <span id="noiseScaleElement">0.05</span>
+                                    </label>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <h6 class="dropdown-header">Color-Scheme Elevation</h6>
+                                <li>
+                                    <label class="dropdown-item" style="vertical-align: middle">
+                                        <input type="color" id="elevation_up" class="elevation" value="#FF0000" /> Color Up
+                                    </label>
+                                </li>
+                                <li>
+                                    <label class="dropdown-item">
+                                        <input type="color" id="elevation_down" class="elevation" value="#00FF00" /> Color Down
+                                    </label>
+                                </li>
+                                <li>
+                                    <label class="dropdown-item">
+                                        <input type="color" id="elevation_neutral" class="elevation" value="#808080" /> Color Neutral
+                                    </label>
+                                </li>
+                                <h6 class="dropdown-header">Color-Scheme Public Transit</h6>
+                                <li>
+                                    <label class="dropdown-item" style="vertical-align: middle">
+                                        <input type="color" id="close_distance" class="public_transport" value="#00FF00" /> Color Up
+                                    </label>
+                                </li>
+                                <li>
+                                    <label class="dropdown-item">
+                                        <input type="color" id="middle_distance" class="public_transport" value="#FFFF00" /> Color Down
+                                    </label>
+                                </li>
+                                <li>
+                                    <label class="dropdown-item">
+                                        <input type="color" id="long_distance" class="public_transport" value="#FF0000" /> Color Neutral
+                                    </label>
+                                </li>
+                            </ul>
                         </div>
-                        <div>
-                            <i class="bi bi-arrow-down-short"></i>  <span id="currentPosTotalElevationDownRest"></span>
-                        </div>
-                    </li>
-                    <li class="nav-item disableTooFar" title="Still to be done">
-                        <i class="bi bi-arrow-left-right"></i> <span id="currentPositionTotalDistanceRest"></span> km
-                    </li>
-                    <li class="nav-item" style="margin-left: 20px;" title="Distance to the track">
-                        <span id="distanceToTrack"></span>
-                    </li>
-                    <li class="nav-item" style="margin-left: 20px;" title="Distance to the track">
-                        <a class="nav-link" href="#" id="zoomInPosition" >
-                            <i class="bi bi-zoom-in"></i> To your position
-                        </a>
-                    </li>
-                </ul>
-                <div class="d-flex" role="search">
-                    <div class="btn-group dropstart">
-                        <!-- fix this button -->
-                        <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-gear-fill"></i>
-                        </button>
-                        <ul class="dropdown-menu">
-                            <h6 class="dropdown-header">Simulate Location</h6>
-                            <li><a class="dropdown-item drop" data-value="random-atlength" href="#">Random on path</a></li>
-                            <li><a class="dropdown-item drop" data-value="random-along" href="#">Random along the path</a></li>
-                            <li><a class="dropdown-item drop" data-value="random" href="#">Random (within view)</a></li>
-                            <li>
-                                <label class="dropdown-item">
-                                    <input type="range" min="0" max="500" value="250" id="noise_scale" /> Noise Scale <span id="noiseScaleElement">0.05</span>
-                                </label>
-                            </li>
-                            <li><hr class="dropdown-divider"></li>
-                            <h6 class="dropdown-header">Color-Scheme Elevation</h6>
-                            <li>
-                                <label class="dropdown-item" style="vertical-align: middle">
-                                    <input type="color" id="elevation_up" class="elevation" value="#FF0000" /> Color Up
-                                </label>
-                            </li>
-                            <li>
-                                <label class="dropdown-item">
-                                    <input type="color" id="elevation_down" class="elevation" value="#00FF00" /> Color Down
-                                </label>
-                            </li>
-                            <li>
-                                <label class="dropdown-item">
-                                    <input type="color" id="elevation_neutral" class="elevation" value="#808080" /> Color Neutral
-                                </label>
-                            </li>
-                            <h6 class="dropdown-header">Color-Scheme Public Transit</h6>
-                            <li>
-                                <label class="dropdown-item" style="vertical-align: middle">
-                                    <input type="color" id="close_distance" class="public_transport" value="#00FF00" /> Color Up
-                                </label>
-                            </li>
-                            <li>
-                                <label class="dropdown-item">
-                                    <input type="color" id="middle_distance" class="public_transport" value="#FFFF00" /> Color Down
-                                </label>
-                            </li>
-                            <li>
-                                <label class="dropdown-item">
-                                    <input type="color" id="long_distance" class="public_transport" value="#FF0000" /> Color Neutral
-                                </label>
-                            </li>
-                        </ul>
                     </div>
                 </div>
             </div>
-    </nav>
-</div>
-<div class="container-fluid" style="padding: 0">
-    <div class="row">
-        <div class="col-sm">
-            <div id="map" ></div>
-            <fieldset style="z-index: 100000; position: absolute; top: 15%; left: 20px; background-color: white; padding: 10px">
-                <legend>Visualisierungsart:</legend>
-                <div>
-                    <label for="height_change">
-                        <input type="radio" id="height_change" name="visualization_type" value="height_change"
-                               checked>
-                        Hoehenveraenderung
-                    </label>
-                </div>
-
-                <div>
-                    <label for="public_transport">
-                        <input type="radio" id="public_transport" name="visualization_type" value="public_transport">
-                        Public Transport
-                    </label>
-                </div>
-            </fieldset>
-        </div>
+        </nav>
     </div>
-    <!--    <button style="z-index: 100000; position: absolute; top: 20%; left: 20px;">Toggle </button>-->
+{% endblock %}
 
-    <div class="row">
-        <!-- Draggable DIV -->
-        <div id="mydiv" class="draggable col-sm">
-            <!-- Include a header DIV with the same name as the draggable DIV, followed by "header" -->
-            <div id="mydivheader">
-                <i class="bi bi-arrows-move"></i>Height Profile
-                <a href="#" class="close" style="text-decoration: none; float: right;"><i class="bi bi-dash-square"></i></a>
-            </div>
-            <div class="draggable_content">
-                <div id="graphcontainer"></div>
-                <button type="button" class="btn btn-primary visualizationToggle" value="current_position">From <i class="bi bi-geo-alt"></i></button>
-                <button type="button" class="btn btn-primary visualizationToggle" value="show_map_content">In <i class="bi bi-map"></i></button>
-                <button type="button" class="btn btn-primary visualizationToggle" value="reset">Reset</button>
-            </div>
-        </div>
-        <!-- Draggable DIV -->
-        <div id="localElevation" class="draggable col-sm">
-            <!-- Include a header DIV with the same name as the draggable DIV, followed by "header" -->
-            <div id="localElevationheader">
-                <i class="bi bi-arrows-move"></i>Local Height Profile
-                <a href="#" class="close" style="text-decoration: none; float:right"><i class="bi bi-dash-square"></i></a>
-            </div>
-            <div class="draggable_content">
-                <div id="localElevationGraph"></div>
-                <div class="row">
-                    <div class="col-sm">
-                        <button type="button" class="btn btn-primary distanceElevationProfile" value="1"><span class="badge text-bg-secondary">1 km</span></button>
-                        <button type="button" class="btn btn-primary distanceElevationProfile" value="2"><span class="badge text-bg-secondary">2 km</span></button>
-                        <button type="button" class="btn btn-primary distanceElevationProfile" value="3"><span class="badge text-bg-secondary">3 km</span></button>
-                        <button type="button" class="btn btn-primary distanceElevationProfile" value="next_peak"><span class="badge text-bg-secondary">Next peak</span></button>
-                    </div>
+{% block body %}
+    <div class="modal" tabindex="-1" id="myModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Too far of track</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="row">
-                    <div class="col-sm">
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="radioHeightProfileFrom" id="local_height_from_geoposition" value="from_location" checked disabled>
-                            <label class="form-check-label" for="local_height_from_geoposition">
-                                From location
-                            </label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="radioHeightProfileFrom" id="local_height_from_marker_position" value="marker_location" disabled>
-                            <label class="form-check-label" for="local_height_from_marker_position">
-                                From placed position
-                            </label>
-                        </div>
-                    </div>
+                <div class="modal-body">
+                    <p>You are too far of track. Thus, this feature is not available.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
     </div>
-</div>
-<!-- Get the leaflet JavaScript file -->
-<script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
-        integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
-        crossorigin=""></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
-<script src="https://code.highcharts.com/highcharts.js"></script>
-<script src="{{ url_for('static', filename='js/togeojson.js') }}"></script>
+    <div class="container-fluid" style="padding: 0">
+        <div class="row">
+            <div class="col-sm">
+                <div id="map" ></div>
+                <fieldset style="z-index: 100000; position: absolute; top: 15%; left: 20px; background-color: white; padding: 10px">
+                    <legend>Visualisierungsart:</legend>
+                    <div>
+                        <label for="height_change">
+                            <input type="radio" id="height_change" name="visualization_type" value="height_change"
+                                   checked>
+                            Hoehenveraenderung
+                        </label>
+                    </div>
 
-<!--<script>-->
-<!--    window.localElevationGraph = null;-->
-<!--</script>-->
+                    <div>
+                        <label for="public_transport">
+                            <input type="radio" id="public_transport" name="visualization_type" value="public_transport">
+                            Public Transport
+                        </label>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+        <!--    <button style="z-index: 100000; position: absolute; top: 20%; left: 20px;">Toggle </button>-->
 
-<script src="{{ url_for('static', filename='js/GPXParser.min.js') }}"></script>
-<script src="{{ url_for('static', filename='js/track_distances.js') }}"></script>
-<script src="{{ url_for('static', filename='js/ui/toggle_buttons.js') }}"></script>
-<script src="{{ url_for('static', filename='js/ui/drop_fake_location.js') }}"></script>
-<script src="{{ url_for('static', filename='js/ui/plot_lines.js') }}"></script>
-<script src="{{ url_for('static', filename='js/data/gpx_tracks.js') }}"></script>
-<script src="{{ url_for('static', filename='js/data/public_transport.js') }}"></script>
-<script src="{{ url_for('static', filename='js/ui/geolocate_features.js') }}"></script>
+        <div class="row">
+            <!-- Draggable DIV -->
+            <div id="mydiv" class="draggable col-sm">
+                <!-- Include a header DIV with the same name as the draggable DIV, followed by "header" -->
+                <div id="mydivheader">
+                    <i class="bi bi-arrows-move"></i>Height Profile
+                    <a href="#" class="close" style="text-decoration: none; float: right;"><i class="bi bi-dash-square"></i></a>
+                </div>
+                <div class="draggable_content">
+                    <div id="graphcontainer"></div>
+                    <button type="button" class="btn btn-primary visualizationToggle" value="current_position">From <i class="bi bi-geo-alt"></i></button>
+                    <button type="button" class="btn btn-primary visualizationToggle" value="show_map_content">In <i class="bi bi-map"></i></button>
+                    <button type="button" class="btn btn-primary visualizationToggle" value="reset">Reset</button>
+                </div>
+            </div>
+            <!-- Draggable DIV -->
+            <div id="localElevation" class="draggable col-sm">
+                <!-- Include a header DIV with the same name as the draggable DIV, followed by "header" -->
+                <div id="localElevationheader">
+                    <i class="bi bi-arrows-move"></i>Local Height Profile
+                    <a href="#" class="close" style="text-decoration: none; float:right"><i class="bi bi-dash-square"></i></a>
+                </div>
+                <div class="draggable_content">
+                    <div id="localElevationGraph"></div>
+                    <div class="row">
+                        <div class="col-sm">
+                            <button type="button" class="btn btn-primary distanceElevationProfile" value="1"><span class="badge text-bg-secondary">1 km</span></button>
+                            <button type="button" class="btn btn-primary distanceElevationProfile" value="2"><span class="badge text-bg-secondary">2 km</span></button>
+                            <button type="button" class="btn btn-primary distanceElevationProfile" value="3"><span class="badge text-bg-secondary">3 km</span></button>
+                            <button type="button" class="btn btn-primary distanceElevationProfile" value="next_peak"><span class="badge text-bg-secondary">Next peak</span></button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="radioHeightProfileFrom" id="local_height_from_geoposition" value="from_location" checked disabled>
+                                <label class="form-check-label" for="local_height_from_geoposition">
+                                    From location
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="radioHeightProfileFrom" id="local_height_from_marker_position" value="marker_location" disabled>
+                                <label class="form-check-label" for="local_height_from_marker_position">
+                                    From placed position
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
 
-<script>
-    <!-- Threshold away from track -->
-    const AWAY_FROM_TRACK_THRESHOLD = 5000;
+{% block body_script %}
+    <!-- Get the leaflet JavaScript file -->
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+            integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
+            crossorigin=""></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="{{ url_for('static', filename='js/togeojson.js') }}"></script>
 
-    const ELEVATION_INCREASING = "#FF0000";
-    const ELEVATION_DECREASING = "#00FF00";
-    const ELEVATION_NEUTRAL = "#808080";
+    <!--<script>-->
+    <!--    window.localElevationGraph = null;-->
+    <!--</script>-->
 
-    const PUBLIC_TRANSPORT_SHORT_DISTANCE = "#00FF00";
-    const PUBLIC_TRANSPORT_MIDDLE_DISTANCE = "#FFFF00";
-    const PUBLIC_TRANSPORT_LONG_DISTANCE = "#FF0000";
+    <script src="{{ url_for('static', filename='js/GPXParser.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/track_distances.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ui/toggle_buttons.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ui/drop_fake_location.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ui/plot_lines.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/data/gpx_tracks.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/data/public_transport.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ui/geolocate_features.js') }}"></script>
 
-    var moving_marker = null;
-    var markerCurrentPosition = null;
-    var clickedMarker = null;
-    var markerIcon = new L.icon({iconUrl: 'static/marker-icon-red.png', iconSize: [25, 41]});
+    <script>
+        <!-- Threshold away from track -->
+        const AWAY_FROM_TRACK_THRESHOLD = 5000;
+
+        const ELEVATION_INCREASING = "#FF0000";
+        const ELEVATION_DECREASING = "#00FF00";
+        const ELEVATION_NEUTRAL = "#808080";
+
+        const PUBLIC_TRANSPORT_SHORT_DISTANCE = "#00FF00";
+        const PUBLIC_TRANSPORT_MIDDLE_DISTANCE = "#FFFF00";
+        const PUBLIC_TRANSPORT_LONG_DISTANCE = "#FF0000";
+
+        var moving_marker = null;
+        var markerCurrentPosition = null;
+        var clickedMarker = null;
+        var markerIcon = new L.icon({iconUrl: 'static/marker-icon-red.png', iconSize: [25, 41]});
 
 
-    function updatePositionSpecificCues() {
-        if (window.currentPosition !== undefined) {
-            document.getElementById("local_height_from_geoposition").disabled = false;
-            var closest_point_on_track = findClosestPointOnTrack(window.currentPosition.latitude, window.currentPosition.longitude);
-            document.getElementById("currentPosTotalElevationUp").innerHTML = `${Number(trackStatistics.elevationPositiveAccumulated[closest_point_on_track.index]).toFixed(2)}`;
-            document.getElementById("currentPosTotalElevationDown").innerHTML = `${Number(trackStatistics.elevationNegativeAccumulated[closest_point_on_track.index]).toFixed(2)}`;
-            document.getElementById("currenPositionTotalDistance").innerHTML = `${Number(trackStatistics.distancesAccumulated[closest_point_on_track.index]).toFixed(2)}`;
+        function updatePositionSpecificCues() {
+            if (window.currentPosition !== undefined) {
+                document.getElementById("local_height_from_geoposition").disabled = false;
+                var closest_point_on_track = findClosestPointOnTrack(window.currentPosition.latitude, window.currentPosition.longitude);
+                document.getElementById("currentPosTotalElevationUp").innerHTML = `${Number(trackStatistics.elevationPositiveAccumulated[closest_point_on_track.index]).toFixed(2)}`;
+                document.getElementById("currentPosTotalElevationDown").innerHTML = `${Number(trackStatistics.elevationNegativeAccumulated[closest_point_on_track.index]).toFixed(2)}`;
+                document.getElementById("currenPositionTotalDistance").innerHTML = `${Number(trackStatistics.distancesAccumulated[closest_point_on_track.index]).toFixed(2)}`;
 
-            var rest_positive = trackStatistics.elevationPositiveAccumulated[trackStatistics.elevationPositiveAccumulated.length - 1] - trackStatistics.elevationPositiveAccumulated[closest_point_on_track.index];
-            var rest_negative = trackStatistics.elevationNegativeAccumulated[trackStatistics.elevationNegativeAccumulated.length - 1] - trackStatistics.elevationNegativeAccumulated[closest_point_on_track.index];
-            var rest_distance = trackStatistics.distancesAccumulated[trackStatistics.distancesAccumulated.length - 1] - trackStatistics.distancesAccumulated[closest_point_on_track.index];
+                var rest_positive = trackStatistics.elevationPositiveAccumulated[trackStatistics.elevationPositiveAccumulated.length - 1] - trackStatistics.elevationPositiveAccumulated[closest_point_on_track.index];
+                var rest_negative = trackStatistics.elevationNegativeAccumulated[trackStatistics.elevationNegativeAccumulated.length - 1] - trackStatistics.elevationNegativeAccumulated[closest_point_on_track.index];
+                var rest_distance = trackStatistics.distancesAccumulated[trackStatistics.distancesAccumulated.length - 1] - trackStatistics.distancesAccumulated[closest_point_on_track.index];
 
-            document.getElementById("currentPosTotalElevationUpRest").innerHTML = `${Number(rest_positive).toFixed(2)}`;
-            document.getElementById("currentPosTotalElevationDownRest").innerHTML = `${Number(rest_negative).toFixed(2)}`;
-            document.getElementById("currentPositionTotalDistanceRest").innerHTML = `${Number(rest_distance).toFixed(2)}`;
+                document.getElementById("currentPosTotalElevationUpRest").innerHTML = `${Number(rest_positive).toFixed(2)}`;
+                document.getElementById("currentPosTotalElevationDownRest").innerHTML = `${Number(rest_negative).toFixed(2)}`;
+                document.getElementById("currentPositionTotalDistanceRest").innerHTML = `${Number(rest_distance).toFixed(2)}`;
 
-            if (closest_point_on_track.metricDistance < 10) {
-                document.getElementById("distanceToTrack").innerHTML = `You are right on track.`;
-                document.querySelectorAll(".disableTooFar").forEach((elm) => {
-                    elm.style.display = "block";
+                if (closest_point_on_track.metricDistance < 10) {
+                    document.getElementById("distanceToTrack").innerHTML = `You are right on track.`;
+                    document.querySelectorAll(".disableTooFar").forEach((elm) => {
+                        elm.style.display = "block";
+                    });
+                }
+                else if (closest_point_on_track.metricDistance < AWAY_FROM_TRACK_THRESHOLD) {
+                    document.getElementById("distanceToTrack").innerHTML = `You are ${Number(closest_point_on_track.metricDistance).toFixed(2)} m away from track.`;
+                    document.querySelectorAll(".disableTooFar").forEach((elm) => {
+                        elm.style.display = "block";
+                    });
+                }
+                else {
+                    document.getElementById("distanceToTrack").innerHTML = `You are ${Number(closest_point_on_track.metricDistance/1000).toFixed(2)} km away from track.`;
+
+                    document.querySelectorAll(".disableTooFar").forEach((elm) => {
+                        elm.style.display = "none";
+                    });
+                }
+
+                var plotLines = retrievePlotlines(window.currentPosition, null);
+                window.chart.update({
+                    xAxis: {
+                        plotLines: plotLines
+                    },
                 });
+            } else {
+                document.getElementById("local_height_from_geoposition").disabled = true;
             }
-            else if (closest_point_on_track.metricDistance < AWAY_FROM_TRACK_THRESHOLD) {
-                document.getElementById("distanceToTrack").innerHTML = `You are ${Number(closest_point_on_track.metricDistance).toFixed(2)} m away from track.`;
-                document.querySelectorAll(".disableTooFar").forEach((elm) => {
-                    elm.style.display = "block";
-                });
-            }
-            else {
-                document.getElementById("distanceToTrack").innerHTML = `You are ${Number(closest_point_on_track.metricDistance/1000).toFixed(2)} km away from track.`;
+        }
+    </script>
+    <script>
 
-                document.querySelectorAll(".disableTooFar").forEach((elm) => {
-                    elm.style.display = "none";
-                });
-            }
+        async function visualize_public_transport_stations() {
+            const data_href = window.location.href;
+            var url = new URL(data_href);
+            var route_id = url.searchParams.get('route_id');
 
-            var plotLines = retrievePlotlines(window.currentPosition, null);
+            const response = await retrieve_public_transport_stations(route_id, window.route_bounds);
+            window.station_data = response;
+
+            var trainIcon = new L.icon({iconUrl: 'static/trainstation.png', iconSize: [16, 16]});
+            if ((window.layerGroup === undefined) || (window.layerGroup === null)) {
+                window.layerGroup = L.layerGroup();
+                response.forEach((elm) => {
+                    let marker = L.marker(
+                        [elm.latitude, elm.longitude],
+                        {icon: trainIcon}
+                    ).bindPopup(
+                        `<b>Name:</b> ${elm.tags.name}<br/>` +
+                        `<b>Operator:</b> ${elm.tags.operator}<br/>` +
+                        `<b>Type:</b> ${elm.tags.public_transport}<br/>` +
+                        `Details: ${JSON.stringify(elm.tags, " ", 2)}`
+                    );
+                    window.layerGroup.addLayer(marker);
+                });
+                window.layerGroup.addTo(window.map);
+            } else {
+                window.layerGroup.addTo(window.map);
+            }
+        }
+
+
+        document.querySelector("fieldset").addEventListener("change", async (e) => {
+            const data_href = window.location.href;
+            var url = new URL(data_href);
+            var route_id = url.searchParams.get('route_id');
+            if (e.target.value === "public_transport") {
+                window.map.removeLayer(window.geo_json_layer);
+                const resp = await visualize_public_transport_stations();
+                visualize_map(route_id);
+            } else {
+                window.map.removeLayer(window.geo_json_layer);
+                if ((window.layerGroup !== undefined) && (window.layerGroup !== null)) {
+                    window.map.removeLayer(window.layerGroup);
+                }
+                visualize_map(route_id);
+            }
+        });
+
+        document.getElementById("zoomInPosition").addEventListener("click", () => {
+            if ((window.currentPosition === undefined) || (window.currentPosition === null)) {
+                return;
+            }
+            map.setView([window.currentPosition.latitude, window.currentPosition.longitude], 16);
+        });
+
+        document.querySelectorAll("input[type='color']").forEach((inp) => {
+            inp.addEventListener("change", function () {
+                if (this.id === "elevation_up") {
+                    localStorage.setItem("color_increasing", this.value);
+                } else if (this.id === "elevation_down") {
+                    localStorage.setItem("color_decreasing", this.value);
+                } else if (this.id === "elevation_neutral") {
+                    localStorage.setItem("color_neutral", this.value);
+                } else if (this.id === "close_distance") {
+                    localStorage.setItem("color_public_transport_close_distance", this.value);
+                } else if (this.id === "middle_distance") {
+                    localStorage.setItem("color_public_transport_middle_distance", this.value);
+                } else if (this.id === "long_distance") {
+                    localStorage.setItem("color_public_transport_long_distance", this.value);
+                }
+                load_data();
+            });
+        });
+
+        document.querySelectorAll(".draggable a.close").forEach((btn) => {
+            btn.addEventListener(
+                "click", function() {
+                    var parent_element = this.closest(".draggable");
+                    var content_element = parent_element.querySelector("div.draggable_content");
+                    if (content_element.style.display === "none") {
+                        content_element.style.display = "block";
+                    } else {
+                        content_element.style.display = "none";
+                    }
+                }
+            )
+        });
+
+        <!-- remove at some point -->
+        document.querySelectorAll("a.drop").forEach((btn) => {
+            btn.addEventListener("click", drop_gps_location)
+        });
+
+        document.querySelectorAll("button.visualizationToggle").forEach((btn) => {
+            btn.addEventListener("click", toggle_global_elevation_button);
+        });
+
+        document.querySelectorAll("button.distanceElevationProfile").forEach((btn) => {
+            btn.addEventListener("click", toggle_local_elevation_button);
+        });
+
+        document.getElementById("noise_scale").addEventListener(
+            "change", function () {
+                document.getElementById("noiseScaleElement").innerHTML = `${Number(0.05 * (this.value / 250)).toFixed(3)}`;
+            }
+        )
+
+    </script>
+    <script>
+        document.getElementById("locate").addEventListener('click', (e) => {
+            e.preventDefault();
+            get_currentPosition();
+        });
+    </script>
+    <script>
+
+        // Initialize the map
+        const map = L.map('map')
+
+        // Get the tile layer from OpenStreetMaps
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+
+            // Specify the maximum zoom of the map
+            maxZoom: 19,
+
+            // Set the attribution for OpenStreetMaps
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Set the view of the map
+        // with the latitude, longitude and the zoom value
+        map.setView([0, 0], 16);
+
+        map.on('click', function(e) {
+            var popLocation= e.latlng;
+
+            add_marker_to_map(popLocation.lat, popLocation.lng);
+
+            var plotLines = retrievePlotlines(
+                window.currentPosition,
+                {
+                    latitude: popLocation.lat,
+                    longitude: popLocation.lng
+                }
+            );
             window.chart.update({
                 xAxis: {
                     plotLines: plotLines
                 },
             });
-        } else {
-            document.getElementById("local_height_from_geoposition").disabled = true;
-        }
-    }
-</script>
-<script>
-
-    async function visualize_public_transport_stations() {
-        const data_href = window.location.href;
-        var url = new URL(data_href);
-        var route_id = url.searchParams.get('route_id');
-
-        const response = await retrieve_public_transport_stations(route_id, window.route_bounds);
-        window.station_data = response;
-
-        var trainIcon = new L.icon({iconUrl: 'static/trainstation.png', iconSize: [16, 16]});
-        if ((window.layerGroup === undefined) || (window.layerGroup === null)) {
-            window.layerGroup = L.layerGroup();
-            response.forEach((elm) => {
-                let marker = L.marker(
-                    [elm.latitude, elm.longitude],
-                    {icon: trainIcon}
-                ).bindPopup(
-                    `<b>Name:</b> ${elm.tags.name}<br/>` +
-                    `<b>Operator:</b> ${elm.tags.operator}<br/>` +
-                    `<b>Type:</b> ${elm.tags.public_transport}<br/>` +
-                    `Details: ${JSON.stringify(elm.tags, " ", 2)}`
-                );
-                window.layerGroup.addLayer(marker);
-            });
-            window.layerGroup.addTo(window.map);
-        } else {
-            window.layerGroup.addTo(window.map);
-        }
-    }
-
-
-    document.querySelector("fieldset").addEventListener("change", async (e) => {
-        const data_href = window.location.href;
-        var url = new URL(data_href);
-        var route_id = url.searchParams.get('route_id');
-        if (e.target.value === "public_transport") {
-            window.map.removeLayer(window.geo_json_layer);
-            const resp = await visualize_public_transport_stations();
-            visualize_map(route_id);
-        } else {
-            window.map.removeLayer(window.geo_json_layer);
-            if ((window.layerGroup !== undefined) && (window.layerGroup !== null)) {
-                window.map.removeLayer(window.layerGroup);
-            }
-            visualize_map(route_id);
-        }
-    });
-
-    document.getElementById("zoomInPosition").addEventListener("click", () => {
-        if ((window.currentPosition === undefined) || (window.currentPosition === null)) {
-            return;
-        }
-        map.setView([window.currentPosition.latitude, window.currentPosition.longitude], 16);
-    });
-
-    document.querySelectorAll("input[type='color']").forEach((inp) => {
-        inp.addEventListener("change", function () {
-            if (this.id === "elevation_up") {
-                localStorage.setItem("color_increasing", this.value);
-            } else if (this.id === "elevation_down") {
-                localStorage.setItem("color_decreasing", this.value);
-            } else if (this.id === "elevation_neutral") {
-                localStorage.setItem("color_neutral", this.value);
-            } else if (this.id === "close_distance") {
-                localStorage.setItem("color_public_transport_close_distance", this.value);
-            } else if (this.id === "middle_distance") {
-                localStorage.setItem("color_public_transport_middle_distance", this.value);
-            } else if (this.id === "long_distance") {
-                localStorage.setItem("color_public_transport_long_distance", this.value);
-            }
-            load_data();
         });
-    });
-
-    document.querySelectorAll(".draggable a.close").forEach((btn) => {
-        btn.addEventListener(
-            "click", function() {
-                var parent_element = this.closest(".draggable");
-                var content_element = parent_element.querySelector("div.draggable_content");
-                if (content_element.style.display === "none") {
-                    content_element.style.display = "block";
-                } else {
-                    content_element.style.display = "none";
-                }
-            }
-        )
-    });
-
-    <!-- remove at some point -->
-    document.querySelectorAll("a.drop").forEach((btn) => {
-        btn.addEventListener("click", drop_gps_location)
-    });
-
-    document.querySelectorAll("button.visualizationToggle").forEach((btn) => {
-        btn.addEventListener("click", toggle_global_elevation_button);
-    });
-
-    document.querySelectorAll("button.distanceElevationProfile").forEach((btn) => {
-        btn.addEventListener("click", toggle_local_elevation_button);
-    });
-
-    document.getElementById("noise_scale").addEventListener(
-        "change", function () {
-            document.getElementById("noiseScaleElement").innerHTML = `${Number(0.05 * (this.value / 250)).toFixed(3)}`;
-        }
-    )
-
-</script>
-<script>
-    document.getElementById("locate").addEventListener('click', (e) => {
-        e.preventDefault();
-        get_currentPosition();
-    });
-</script>
-<script>
-
-    // Initialize the map
-    const map = L.map('map')
-
-    // Get the tile layer from OpenStreetMaps
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-
-        // Specify the maximum zoom of the map
-        maxZoom: 19,
-
-        // Set the attribution for OpenStreetMaps
-        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
-
-    // Set the view of the map
-    // with the latitude, longitude and the zoom value
-    map.setView([0, 0], 16);
-
-    map.on('click', function(e) {
-        var popLocation= e.latlng;
-
-        add_marker_to_map(popLocation.lat, popLocation.lng);
-
-        var plotLines = retrievePlotlines(
-            window.currentPosition,
-            {
-                latitude: popLocation.lat,
-                longitude: popLocation.lng
-            }
-        );
-        window.chart.update({
-            xAxis: {
-                plotLines: plotLines
-            },
-        });
-    });
 
 
-    window.map = map;
+        window.map = map;
 
-</script>
-<script>
-    var elevation_increasing_color = localStorage.getItem("color_increasing");
-    if (elevation_increasing_color !== null) {
-        document.getElementById("elevation_up").value = elevation_increasing_color;
-    }
-    var elevation_decreasing_color = localStorage.getItem("color_decreasing");
-    if (elevation_decreasing_color !== null) {
-        document.getElementById("elevation_down").value = elevation_decreasing_color;
-    }
-    var elevation_neutral_color = localStorage.getItem("color_neutral");
-    if (elevation_neutral_color !== null) {
-        document.getElementById("elevation_neutral").value = elevation_neutral_color;
-    }
-    var color_public_transport_close_distance = localStorage.getItem("color_public_transport_close_distance");
-    if (color_public_transport_close_distance !== null) {
-        document.getElementById("close_distance").value = color_public_transport_close_distance;
-    }
-    var color_public_transport_middle_distance = localStorage.getItem("color_public_transport_middle_distance");
-    if (color_public_transport_middle_distance !== null) {
-        document.getElementById("middle_distance").value = color_public_transport_middle_distance;
-    }
-    var color_public_transport_long_distance = localStorage.getItem("color_public_transport_long_distance");
-    if (color_public_transport_long_distance !== null) {
-        document.getElementById("long_distance").value = color_public_transport_long_distance;
-    }
-
-    function getColors() {
+    </script>
+    <script>
         var elevation_increasing_color = localStorage.getItem("color_increasing");
-        if (elevation_increasing_color === null) {
-            elevation_increasing_color = ELEVATION_INCREASING;
-            localStorage.setItem("color_increasing", elevation_increasing_color);
+        if (elevation_increasing_color !== null) {
+            document.getElementById("elevation_up").value = elevation_increasing_color;
         }
         var elevation_decreasing_color = localStorage.getItem("color_decreasing");
-        if (elevation_decreasing_color === null) {
-            elevation_decreasing_color = ELEVATION_DECREASING;
-            localStorage.setItem("color_decreasing", elevation_decreasing_color);
+        if (elevation_decreasing_color !== null) {
+            document.getElementById("elevation_down").value = elevation_decreasing_color;
         }
         var elevation_neutral_color = localStorage.getItem("color_neutral");
-        if (elevation_neutral_color === null) {
-            elevation_neutral_color = ELEVATION_NEUTRAL;
-            localStorage.setItem("color_neutral", elevation_neutral_color);
+        if (elevation_neutral_color !== null) {
+            document.getElementById("elevation_neutral").value = elevation_neutral_color;
         }
-
         var color_public_transport_close_distance = localStorage.getItem("color_public_transport_close_distance");
-        if (color_public_transport_close_distance === null) {
-            color_public_transport_close_distance = PUBLIC_TRANSPORT_SHORT_DISTANCE;
-            localStorage.setItem("color_public_transport_close_distance", elevation_neutral_color);
+        if (color_public_transport_close_distance !== null) {
+            document.getElementById("close_distance").value = color_public_transport_close_distance;
         }
         var color_public_transport_middle_distance = localStorage.getItem("color_public_transport_middle_distance");
-        if (color_public_transport_middle_distance === null) {
-            color_public_transport_middle_distance = PUBLIC_TRANSPORT_MIDDLE_DISTANCE;
-            localStorage.setItem("color_public_transport_middle_distance", color_public_transport_middle_distance);
+        if (color_public_transport_middle_distance !== null) {
+            document.getElementById("middle_distance").value = color_public_transport_middle_distance;
         }
         var color_public_transport_long_distance = localStorage.getItem("color_public_transport_long_distance");
-        if (color_public_transport_long_distance === null) {
-            color_public_transport_long_distance = PUBLIC_TRANSPORT_LONG_DISTANCE;
-            localStorage.setItem("color_public_transport_long_distance", color_public_transport_long_distance);
+        if (color_public_transport_long_distance !== null) {
+            document.getElementById("long_distance").value = color_public_transport_long_distance;
         }
-        return {
-            elevation: {
-                increasing: elevation_increasing_color,
-                decreasing: elevation_decreasing_color,
-                neutral: elevation_neutral_color
-            },
-            public_transport: {
-                short: color_public_transport_close_distance,
-                middle: color_public_transport_middle_distance,
-                long: color_public_transport_long_distance
+
+        function getColors() {
+            var elevation_increasing_color = localStorage.getItem("color_increasing");
+            if (elevation_increasing_color === null) {
+                elevation_increasing_color = ELEVATION_INCREASING;
+                localStorage.setItem("color_increasing", elevation_increasing_color);
+            }
+            var elevation_decreasing_color = localStorage.getItem("color_decreasing");
+            if (elevation_decreasing_color === null) {
+                elevation_decreasing_color = ELEVATION_DECREASING;
+                localStorage.setItem("color_decreasing", elevation_decreasing_color);
+            }
+            var elevation_neutral_color = localStorage.getItem("color_neutral");
+            if (elevation_neutral_color === null) {
+                elevation_neutral_color = ELEVATION_NEUTRAL;
+                localStorage.setItem("color_neutral", elevation_neutral_color);
+            }
+
+            var color_public_transport_close_distance = localStorage.getItem("color_public_transport_close_distance");
+            if (color_public_transport_close_distance === null) {
+                color_public_transport_close_distance = PUBLIC_TRANSPORT_SHORT_DISTANCE;
+                localStorage.setItem("color_public_transport_close_distance", elevation_neutral_color);
+            }
+            var color_public_transport_middle_distance = localStorage.getItem("color_public_transport_middle_distance");
+            if (color_public_transport_middle_distance === null) {
+                color_public_transport_middle_distance = PUBLIC_TRANSPORT_MIDDLE_DISTANCE;
+                localStorage.setItem("color_public_transport_middle_distance", color_public_transport_middle_distance);
+            }
+            var color_public_transport_long_distance = localStorage.getItem("color_public_transport_long_distance");
+            if (color_public_transport_long_distance === null) {
+                color_public_transport_long_distance = PUBLIC_TRANSPORT_LONG_DISTANCE;
+                localStorage.setItem("color_public_transport_long_distance", color_public_transport_long_distance);
+            }
+            return {
+                elevation: {
+                    increasing: elevation_increasing_color,
+                    decreasing: elevation_decreasing_color,
+                    neutral: elevation_neutral_color
+                },
+                public_transport: {
+                    short: color_public_transport_close_distance,
+                    middle: color_public_transport_middle_distance,
+                    long: color_public_transport_long_distance
+                }
             }
         }
-    }
 
-</script>
+    </script>
 
 
-<script src="{{ url_for('static', filename='js/plot/elevation.js') }}"></script>
-<script src="{{ url_for('static', filename='js/data/geojson_grouping.js') }}"></script>
-<script>
+    <script src="{{ url_for('static', filename='js/plot/elevation.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/data/geojson_grouping.js') }}"></script>
+    <script>
 
-    function visualize_map(route_id) {
-        var route_data_str = localStorage.getItem("gpx_route_" + route_id);
-        var route_data_obj = JSON.parse(route_data_str);
-        var geoJson_dom = (new DOMParser()).parseFromString(route_data_obj.data, 'text/xml');
-        var geo_json = toGeoJSON.gpx(geoJson_dom);
+        function visualize_map(route_id) {
+            var route_data_str = localStorage.getItem("gpx_route_" + route_id);
+            var route_data_obj = JSON.parse(route_data_str);
+            var geoJson_dom = (new DOMParser()).parseFromString(route_data_obj.data, 'text/xml');
+            var geo_json = toGeoJSON.gpx(geoJson_dom);
 
-        window.trackStatistics = point_statistics(window.gpx.tracks[0].points);
-        const accumulated_elevation_positive = trackStatistics.elevationPositiveAccumulated;
-        const accumulated_elevation_negative = trackStatistics.elevationNegativeAccumulated;
-        get_currentPosition();
+            window.trackStatistics = point_statistics(window.gpx.tracks[0].points);
+            const accumulated_elevation_positive = trackStatistics.elevationPositiveAccumulated;
+            const accumulated_elevation_negative = trackStatistics.elevationNegativeAccumulated;
+            get_currentPosition();
 
-        document.getElementById("totalDistance").innerHTML = `${Number(window.gpx.tracks[0].distance.total/1000).toFixed(2)}`;
-        document.getElementById("totalElevationUp").innerHTML = `${Number(accumulated_elevation_positive[accumulated_elevation_positive.length -1]).toFixed(2)}`;
-        document.getElementById("totalElevationDown").innerHTML = `${Number(accumulated_elevation_negative[accumulated_elevation_negative.length -1]).toFixed(2)}`;
+            document.getElementById("totalDistance").innerHTML = `${Number(window.gpx.tracks[0].distance.total/1000).toFixed(2)}`;
+            document.getElementById("totalElevationUp").innerHTML = `${Number(accumulated_elevation_positive[accumulated_elevation_positive.length -1]).toFixed(2)}`;
+            document.getElementById("totalElevationDown").innerHTML = `${Number(accumulated_elevation_negative[accumulated_elevation_negative.length -1]).toFixed(2)}`;
 
-        var custom_json = null;
-        console.log(route_id, document.querySelector("input[type=radio][name=visualization_type]:checked").value);
-        if (document.querySelector("input[type=radio][name=visualization_type]:checked").value === "height_change") {
-            custom_json = geo_json_grouped_by_elevation_change(geo_json);
-        } else if (document.querySelector("input[type=radio][name=visualization_type]:checked").value === "public_transport") {
-            custom_json = geo_json_grouped_by_distance_to_train_station(geo_json, route_id);
-        } else {
-            console.error("unknown input box checked")
-        }
-        if (window.geo_json_layer !== undefined) {
-            window.map.removeLayer(window.geo_json_layer);
-        }
-
-        window.geo_json_layer = L.geoJson(custom_json, {
-            style: function (feature) {
-                return colorize_feature(feature);
+            var custom_json = null;
+            console.log(route_id, document.querySelector("input[type=radio][name=visualization_type]:checked").value);
+            if (document.querySelector("input[type=radio][name=visualization_type]:checked").value === "height_change") {
+                custom_json = geo_json_grouped_by_elevation_change(geo_json);
+            } else if (document.querySelector("input[type=radio][name=visualization_type]:checked").value === "public_transport") {
+                custom_json = geo_json_grouped_by_distance_to_train_station(geo_json, route_id);
+            } else {
+                console.error("unknown input box checked")
             }
-        });
+            if (window.geo_json_layer !== undefined) {
+                window.map.removeLayer(window.geo_json_layer);
+            }
 
-        window.geo_json_layer
-            .on('add', function(e) {
-                window.route_bounds = e.target.getBounds();
-                window.map.fitBounds(e.target.getBounds());
-            })
-            .addTo(window.map);
-
-        window.chart = plotElevation("graphcontainer", null, null);
-    }
-
-
-    function load_data() {
-        const data_href = window.location.href;
-        var url = new URL(data_href);
-        var route_id = url.searchParams.get('route_id');
-
-        fetch("/gpx/" + route_id)
-            .then(response => response.text())
-            .then((data) => {
-                localStorage.setItem(
-                    "gpx_route_" + route_id,
-                    JSON.stringify(
-                        {
-                            "route_id": route_id,
-                            "data": data
-                        }
-                    )
-                )
-                window.gpx = new gpxParser();
-                window.gpx.parse(data);
-
-                visualize_map(route_id);
+            window.geo_json_layer = L.geoJson(custom_json, {
+                style: function (feature) {
+                    return colorize_feature(feature);
+                }
             });
-    }
 
-    load_data();
-</script>
-<script src="{{ url_for('static', filename='js/draggable_elements.js') }}"></script>
-<script>
-    // Make the DIV element draggable:
-    dragElement(document.getElementById("mydiv"));
-    dragElement(document.getElementById("localElevation"));
-</script>
-</body>
-</html>
+            window.geo_json_layer
+                .on('add', function(e) {
+                    window.route_bounds = e.target.getBounds();
+                    window.map.fitBounds(e.target.getBounds());
+                })
+                .addTo(window.map);
+
+            window.chart = plotElevation("graphcontainer", null, null);
+        }
+
+
+        function load_data() {
+            const data_href = window.location.href;
+            var url = new URL(data_href);
+            var route_id = url.searchParams.get('route_id');
+
+            fetch("/gpx/" + route_id)
+                .then(response => response.text())
+                .then((data) => {
+                    localStorage.setItem(
+                        "gpx_route_" + route_id,
+                        JSON.stringify(
+                            {
+                                "route_id": route_id,
+                                "data": data
+                            }
+                        )
+                    )
+                    window.gpx = new gpxParser();
+                    window.gpx.parse(data);
+
+                    visualize_map(route_id);
+                });
+        }
+
+        load_data();
+    </script>
+    <script src="{{ url_for('static', filename='js/draggable_elements.js') }}"></script>
+    <script>
+        // Make the DIV element draggable:
+        dragElement(document.getElementById("mydiv"));
+        dragElement(document.getElementById("localElevation"));
+    </script>
+{% endblock %}
