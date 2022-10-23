@@ -1,11 +1,14 @@
 import datetime
 import time
+from pathlib import Path
 
 import flask
 import re
 
 import stravalib.exc
 from flask import Flask, request, Response, session, render_template, url_for, jsonify
+
+from werkzeug.utils import secure_filename
 
 import requests
 import xml.etree.ElementTree as ET
@@ -17,10 +20,11 @@ from stravalib import Client
 from utils.gpx import reverse_gpx_trackpts
 
 import os
+
 print(os.getcwd())
 
 STATIC_FOLDER = "/static/"
-TOML_STRAVA_CONFIGURATION="./config_strava_downloader.toml"
+TOML_STRAVA_CONFIGURATION = "./config_strava_downloader.toml"
 
 try:
     from local_settings import *
@@ -29,7 +33,11 @@ except ImportError as e:
 
 app = Flask(__name__, static_folder=STATIC_FOLDER)
 app.secret_key = b"\xdd\xd5\xe7\xf1\x9f\xa0I\x03\xa8(\x16\xab\xff*|\x08\x9e\x8e\x14\x99\xb6*\xe9E5y\xb3\xcb\xee\x13\xa2$"
-app.strava_config = toml.load(TOML_STRAVA_CONFIGURATION)
+try:
+    app.strava_config = toml.load(TOML_STRAVA_CONFIGURATION)
+except FileNotFoundError as e:
+    print(f"Could not read configurations from: {TOML_STRAVA_CONFIGURATION}")
+    app.strava_config = {}
 
 
 @app.template_filter()
@@ -69,7 +77,7 @@ def test_login():
     authorize_url = client.authorization_url(
         client_id=app.strava_config["strava"]["client_id"],
         redirect_uri=flask.request.host_url[:-1] + url_for("test_redirect"),
-        scope=["read_all"]
+        scope=["read_all", "activity:read_all", "activity:write"]
     )
     return flask.redirect(authorize_url)
 
@@ -114,7 +122,7 @@ def osm_trainstation():
     min_lat = request.args.get("min_lat", None)
     max_lat = request.args.get("max_lat", None)
     if min_lon is None or max_lon is None or min_lat is None or max_lat is None:
-        raise("parameters are missing")
+        raise ("parameters are missing")
 
     if min_lon > max_lon:
         min_lon, max_lon = max_lon, min_lon
@@ -130,7 +138,7 @@ def osm_trainstation():
     stations = []
 
     try:
-        queryString = f'(node["railway"="platform"]({bounding_box});node["railway"="station"]({bounding_box});node["railway"="halt"]({bounding_box});); '\
+        queryString = f'(node["railway"="platform"]({bounding_box});node["railway"="station"]({bounding_box});node["railway"="halt"]({bounding_box});); ' \
                       f"out;"
         res = overpass.query(
             queryString
@@ -170,7 +178,6 @@ def index():
 def get_gpx(route_id):
     try:
         url_request = f"https://www.strava.com/api/v3/routes/{route_id}/export_gpx"
-        print(url_request)
         response = requests.get(
             url_request, headers={"Authorization": f"Bearer {session['access_token']}"}
         )
@@ -209,3 +216,65 @@ def reverse_gpx(route_id):
 @app.route("/map")
 def show_map():
     return render_template("map.html")
+
+
+import tempfile
+UPLOAD_FILE = tempfile.gettempdir()
+
+@app.route("/upload", methods=['GET', 'POST'])
+def show_upload_page():
+    update_token()
+    if request.method == "POST":
+        print(request.files)
+        print(request.form['activity_name'])
+        print(request.form['activity_description'])
+        file = request.files['activity_file']
+        filename = secure_filename(file.filename)
+        save_path = Path(UPLOAD_FILE) / filename
+        file.save(save_path)
+
+        f = None
+        with open(save_path, "r+b") as f:
+            url_request = f"https://www.strava.com/api/v3/uploads"
+            response = requests.post(
+                url_request,
+                headers={"Authorization": f"Bearer {session['access_token']}"},
+                files={'file': f},
+                params={
+                    "private": True,
+                    "data_type": "fit"
+                }
+            )
+            print(f"response.text", response.text)
+            response_obj = json.loads(response.text)
+
+    return render_template("show_upload.html", context={
+        "response": response_obj
+    })
+
+
+@app.route("/activities", methods=["GET", "POST"])
+def load_activities():
+    if request.method == "POST":
+        id_of_activity = request.form['toggle']
+        response = requests.put(
+            f"https://www.strava.com/api/v3/activities/{id_of_activity}",
+            headers={
+                "Authorization": f"Bearer {session['access_token']}"
+            },
+            params={
+                'visibility': 'only_me',
+            }
+        )
+        print(request)
+    update_token()
+    url_request = f"https://www.strava.com/api/v3/athlete/activities"
+    response = requests.get(url_request, headers={
+        "Authorization": f"Bearer {session['access_token']}"})
+
+    print(session['access_token'])
+    obj = json.loads(response.text)
+    return render_template(
+        "show_activities.html", **{"response": response.text, "response_obj": obj}
+    )
+
