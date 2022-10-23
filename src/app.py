@@ -21,6 +21,9 @@ from utils.gpx import reverse_gpx_trackpts
 
 import os
 
+import tempfile
+UPLOAD_FILE = tempfile.gettempdir()
+
 print(os.getcwd())
 
 STATIC_FOLDER = "/static/"
@@ -218,12 +221,10 @@ def show_map():
     return render_template("map.html")
 
 
-import tempfile
-UPLOAD_FILE = tempfile.gettempdir()
-
 @app.route("/upload", methods=['GET', 'POST'])
 def show_upload_page():
     update_token()
+    response_obj = None
     if request.method == "POST":
         print(request.files)
         print(request.form['activity_name'])
@@ -248,13 +249,12 @@ def show_upload_page():
             print(f"response.text", response.text)
             response_obj = json.loads(response.text)
 
-    return render_template("show_upload.html", context={
-        "response": response_obj
-    })
+    return render_template("show_upload.html", response=response_obj)
 
 
 @app.route("/activities", methods=["GET", "POST"])
 def load_activities():
+    update_token()
     if request.method == "POST":
         id_of_activity = request.form['toggle']
         response = requests.put(
