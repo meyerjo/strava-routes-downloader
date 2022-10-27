@@ -159,6 +159,17 @@ def get_gpx(route_id):
     return response.content
 
 
+@app.route("/upload_status/<upload_id>")
+def upload_status(upload_id):
+    try:
+        url_request = f"https://www.strava.com/api/v3/uploads/{upload_id}"
+        response = requests.get(
+            url_request, headers={"Authorization": f"Bearer {session['access_token']}"}
+        )
+    except BaseException as e:
+        raise e
+    return Response(response.content, content_type="application/json")
+
 @app.route("/download_gpx/<route_id>")
 def download_gpx(route_id):
     update_token()

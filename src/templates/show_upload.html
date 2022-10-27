@@ -1,31 +1,54 @@
 {% extends "base.html" %}
 {% block active_activity_index %}active{% endblock %}
 {% block body %}
-<div class="container">
-    <form class="row g-3" method="post" enctype="multipart/form-data">
-        <div class="col-12">
-            <label for="activity_name" class="form-label">Name</label>
-            <input type="text" class="form-control" name="activity_name" id="activity_name">
-        </div>
-        <div class="col-12">
-            <label for="activity_description" class="form-label">Description</label>
-            <textarea class="form-control" name="activity_description" id="activity_description"></textarea>
-        </div>
-        <div class="col-12">
-            <label for="activity_file" class="form-label">Default file input example</label>
-            <input class="form-control" type="file" name="activity_file" id="activity_file" accept=".fit,.gpx" >
-        </div>
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
+    <div class="container">
+        <form class="row g-3" method="post" enctype="multipart/form-data">
+            <div class="col-12">
+                <label for="activity_name" class="form-label">Name</label>
+                <input type="text" class="form-control" name="activity_name" id="activity_name">
+            </div>
+            <div class="col-12">
+                <label for="activity_description" class="form-label">Description</label>
+                <textarea class="form-control" name="activity_description" id="activity_description"></textarea>
+            </div>
+            <div class="col-12">
+                <label for="activity_file" class="form-label">Default file input example</label>
+                <input class="form-control" type="file" name="activity_file" id="activity_file" accept=".fit,.gpx" >
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
 
-    {% if response is none %}
-    {% else %}
-        This is rather experimental: {{ response|tojson }}
-    {% endif %}
-</div>
+        {% if response is none %}
+        {% else %}
+            This is rather experimental: {{ response|tojson }}
+            <span id="upload_status">
+        {{ response|tojson }}
+        </span>
+            <script>
+                function myTimer() {
+                    console.log("{{ response.id_str }} ");
+                    fetch(`{{ url_for('upload_status', upload_id=response.id_str) }}`)
+                        .then((response) => response.json())
+                        .then((data) => {
+                            console.log(data);
+                            if (data.activity_id !== null) {
+                                myStopFunction();
+                            }
+                            document.getElementById("upload_status").innerText = JSON.stringify(data, "  ", 2);
+                        });
+                }
+
+                function myStopFunction() {
+                    clearInterval(myInterval);
+                }
+
+                const myInterval = setInterval(myTimer, 5000);
+            </script>
+        {% endif %}
+    </div>
 {% endblock %}
 
 {% block body_script %}
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
 
 {% endblock %}
