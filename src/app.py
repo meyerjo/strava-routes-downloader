@@ -205,29 +205,45 @@ def show_map():
 @app.route("/upload", methods=["GET", "POST"])
 def show_upload_page():
     update_token()
-    response_obj = None
-    if request.method == "POST":
-        print(request.files)
-        print(request.form["activity_name"])
-        print(request.form["activity_description"])
-        file = request.files["activity_file"]
-        filename = secure_filename(file.filename)
-        save_path = Path(UPLOAD_FILE) / filename
-        file.save(save_path)
+    return render_template("show_upload.html")
 
-        f = None
-        with open(save_path, "r+b") as f:
-            url_request = f"https://www.strava.com/api/v3/uploads"
-            response = requests.post(
-                url_request,
-                headers={"Authorization": f"Bearer {session['access_token']}"},
-                files={"file": f},
-                params={"private": True, "data_type": "fit"},
-            )
-            print(f"response.text", response.text)
-            response_obj = json.loads(response.text)
 
-    return render_template("show_upload.html", response=response_obj)
+
+@app.route("/upload_activity", methods=["POST"])
+def upload_activity():
+    update_token()
+    assert request.method == "POST"
+    print(request.files)
+    activity_name = request.form.get("activity_name", None)
+    activity_description = request.form.get("activity_description", None)
+    file = request.files["activity_file"]
+    filename = secure_filename(file.filename)
+    save_path = Path(UPLOAD_FILE) / filename
+    file.save(save_path)
+
+    # TODO: make datatype dependent on file
+    additional_options = {
+        "data_type": "fit"
+    }
+
+    if activity_name is not None and activity_name.strip() != "":
+        additional_options["name"] = activity_name
+        print(f"Adding a name to the activity: {activity_name}")
+    if activity_description is not None and activity_description.strip() != "":
+        additional_options["description"] = activity_description
+        print(f"Adding a description to the activity: {activity_description}")
+    response = None
+    f = None
+    with open(save_path, "r+b") as f:
+        url_request = f"https://www.strava.com/api/v3/uploads"
+        response = requests.post(
+            url_request,
+            headers={"Authorization": f"Bearer {session['access_token']}"},
+            files={"file": f},
+            params=additional_options,
+        )
+    assert response is not None
+    return Response(response.text, content_type="application/json")
 
 
 @app.route("/activities", methods=["GET", "POST"])
@@ -242,7 +258,6 @@ def load_activities():
                 "visibility": "only_me",
             },
         )
-        print(request)
 
     url_request = f"https://www.strava.com/api/v3/athlete/activities"
     response = requests.get(

@@ -2,49 +2,94 @@
 {% block active_activity_index %}active{% endblock %}
 {% block body %}
     <div class="container">
-        <form class="row g-3" method="post" enctype="multipart/form-data">
-            <div class="col-12">
-                <label for="activity_name" class="form-label">Name</label>
-                <input type="text" class="form-control" name="activity_name" id="activity_name">
-            </div>
-            <div class="col-12">
-                <label for="activity_description" class="form-label">Description</label>
-                <textarea class="form-control" name="activity_description" id="activity_description"></textarea>
-            </div>
-            <div class="col-12">
-                <label for="activity_file" class="form-label">Default file input example</label>
-                <input class="form-control" type="file" name="activity_file" id="activity_file" accept=".fit,.gpx" >
-            </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
+        <form class="row g-3" method="post" enctype="multipart/form-data"">
+        <div class="col-12">
+            <label for="activity_name" class="form-label">Name</label>
+            <input type="text" class="form-control" name="activity_name" id="activity_name">
+        </div>
+        <div class="col-12">
+            <label for="activity_description" class="form-label">Description</label>
+            <textarea class="form-control" name="activity_description" id="activity_description"></textarea>
+        </div>
+        <div class="col-12">
+            <label for="activity_file" class="form-label">Default file input example</label>
+            <input class="form-control" type="file" name="activity_file" id="activity_file" accept=".fit,.gpx" >
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
         </form>
 
-        {% if response is none %}
-        {% else %}
-            This is rather experimental: {{ response|tojson }}
-            <span id="upload_status">
-        {{ response|tojson }}
-        </span>
-            <script>
-                function myTimer() {
-                    console.log("{{ response.id_str }} ");
-                    fetch(`{{ url_for('upload_status', upload_id=response.id_str) }}`)
-                        .then((response) => response.json())
-                        .then((data) => {
-                            console.log(data);
-                            if (data.activity_id !== null) {
-                                myStopFunction();
-                            }
-                            document.getElementById("upload_status").innerText = JSON.stringify(data, "  ", 2);
-                        });
-                }
+        <div id="upload_status"></div>
 
-                function myStopFunction() {
-                    clearInterval(myInterval);
-                }
 
-                const myInterval = setInterval(myTimer, 5000);
-            </script>
-        {% endif %}
+        <script>
+            let myInterval = null;
+            function myTimer(id_str) {
+                console.log(`requesting status for ${id_str} `);
+                document.getElementById("upload_status").innerHTML += "<br/> Requesting new status for upload_id";
+                fetch(`/upload_status/${id_str}`)
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if (data.activity_id !== null) {
+                            document.getElementById("upload_status").innerHTML += "<br/>  Stopping timer because activity id is set";
+                            myStopFunction();
+                        } else if (data.error !== null) {
+                            document.getElementById("upload_status").innerHTML += "<br/>  Stopping timer because error field is set";
+                            myStopFunction();
+                        }
+                        document.getElementById("upload_status").innerHTML += "<br/>" + JSON.stringify(data, "  ", 2);
+                    });
+            }
+
+            function myStopFunction() {
+                clearInterval(myInterval);
+            }
+
+            function processForm(e) {
+                if (e.preventDefault) e.preventDefault();
+                const formdata = new FormData(document.querySelector("form"));
+
+                const post_url = `{{ url_for('upload_activity') }}`;
+                console.log(post_url);
+
+                fetch(post_url, {
+                    method: "POST",
+                    cache: "no-cache",
+                    body: formdata
+                }).then(
+                    response => response.json() // if the response is a JSON object
+                ).then(
+                    (success) => {
+                        console.log(success);
+                        var logging_element = document.getElementById("upload_status");
+                        logging_element.innerHTML = `
+                                ${success.id_str}: ${success.status} (Error field: ${success.error})
+                            `;
+                        // setting up the polling interval
+                        myInterval = setInterval(() => myTimer(success.id_str), 5000);
+                    }
+                ).catch(
+                    (error) => {
+                        document.getElementById("upload_status").innerHTML += `
+                            There was an error in processing the file: ${JSON.stringify(error, "  ", 2)}
+                        `;
+                    }
+                )
+                /* do what you want with the form */
+
+                // You must return false to prevent the default form behavior
+                return false;
+            }
+
+            var form = document.querySelector("form");
+            if (form.attachEvent) {
+                form.attachEvent("submit", processForm);
+            } else {
+                form.addEventListener("submit", processForm);
+            }
+
+
+            {#const myInterval = setInterval(myTimer, 5000);#}
+        </script>
     </div>
 {% endblock %}
 
