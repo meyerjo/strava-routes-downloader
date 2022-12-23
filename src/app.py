@@ -208,7 +208,6 @@ def show_upload_page():
     return render_template("show_upload.html")
 
 
-
 @app.route("/upload_activity", methods=["POST"])
 def upload_activity():
     update_token()
