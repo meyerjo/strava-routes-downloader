@@ -196,6 +196,27 @@ def reverse_gpx(route_id):
     r.headers["Content-Disposition"] = f"attachment;filename=route_{route_id}.gpx"
     return r
 
+@app.route("/segment_efforts/<segment_id>")
+def segment_efforts(segment_id):
+    update_token()
+    url_request = f"https://www.strava.com/api/v3/segment_efforts"
+    response = requests.get(
+        url_request, headers={"Authorization": f"Bearer {session['access_token']}"},
+        params={
+            "segment_id": segment_id
+        }
+    )
+    return Response(response.content, content_type="application/json")
+
+
+@app.route("/segments/<segment_id>")
+def segment_details(segment_id):
+    update_token()
+    url_request = f"https://www.strava.com/api/v3/segments/{segment_id}"
+    response = requests.get(
+        url_request, headers={"Authorization": f"Bearer {session['access_token']}"}
+    )
+    return Response(response.content, content_type="application/json")
 
 @app.route("/map")
 def show_map():
@@ -207,12 +228,21 @@ def show_upload_page():
     update_token()
     return render_template("show_upload.html")
 
+@app.route("/segments")
+def show_segments():
+    update_token()
+    url_request = f"https://www.strava.com/api/v3/segments/starred"
+    response = requests.get(
+        url_request, headers={"Authorization": f"Bearer {session['access_token']}"}
+    )
+
+    obj = json.loads(response.text)
+    return render_template("show_segments.html", **{"data_obj": obj})
 
 @app.route("/upload_activity", methods=["POST"])
 def upload_activity():
     update_token()
     assert request.method == "POST"
-    print(request.files)
     activity_name = request.form.get("activity_name", None)
     activity_description = request.form.get("activity_description", None)
     file = request.files["activity_file"]
@@ -231,8 +261,7 @@ def upload_activity():
     if activity_description is not None and activity_description.strip() != "":
         additional_options["description"] = activity_description
         print(f"Adding a description to the activity: {activity_description}")
-    response = None
-    f = None
+
     with open(save_path, "r+b") as f:
         url_request = f"https://www.strava.com/api/v3/uploads"
         response = requests.post(

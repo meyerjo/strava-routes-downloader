@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block active_upload_page %}active{% endblock %}
+{% block body %}
+    <div class="container">
+        <div class="alert alert-primary" role="alert">
+            Mainly done for debugging purposes. To see whether we can still change privacy settings to private via API (we can't)
+        </div>
+        <div class="modal" id="myModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Modal title</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="modal_body">
+                        <p>Modal body text goes here.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm">
+                <table class="table">
+                    <tr>
+                        <th>Id</th>
+                        <th>Name</th>
+                        <th>Activity Type</th>
+                        <th>Average Rate</th>
+                        <th>Starred Date</th>
+                        <th>Get Efforts</th>
+                    </tr>
+                    {% for row in data_obj %}
+                        <tr>
+                            <td>{{ row.id }}</td>
+                            <td>{{ row.name }}</td>
+                            <td>{{ row.activity_type }}</td>
+                            <td>{{ row.average_grade }}</td>
+                            <td>{{ row.starred_date }}</td>
+                            <td>
+                                <button class="btn btn-primary get_efforts" data-segmentid="{{ row.id }}">
+                                    Get efforts
+                                </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body_script %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
+    <script>
+        var elements = document.querySelectorAll("button.get_efforts");
+        elements.forEach((elm) => elm.addEventListener("click",
+            (e) => {
+                console.log(this);
+                var segment_id = e.target.dataset.segmentid;
+                debugger;
+                console.log("button clicked", segment_id);
+                fetch(`/segment_efforts/${segment_id}`)
+                    .then(
+                        response => response.json()
+                    )
+                    .then(
+                        success => {
+                            var myModalEl = document.getElementById('myModal')
+
+                            myModalEl.querySelector('.modal-title').innerHTML = `
+                                ${success.length} efforts on that segment by you
+                            `;
+
+                            myModalEl.querySelector('.modal-body').innerHTML = "";
+                            success.forEach((elm, i) => {
+                                myModalEl.querySelector('.modal-body').innerHTML += `
+                                    ${i}: ${JSON.stringify(elm, "  ", 2)} <br/>
+                                `;
+                            });
+
+                            var modal = new bootstrap.Modal(myModalEl, {}) // Returns a Bootstrap modal i
+                            modal.show();
+                        }
+                    )
+                    .catch(
+                        error => console.error(error)
+                    )
+                fetch(`/segments/${segment_id}`)
+                    .then(
+                        response => response.json()
+                    )
+                    .then(
+                        success => {
+                            console.log(success)
+                            var myModalEl = document.getElementById('myModal');
+
+                            myModalEl.querySelector('.modal-body').innerHTML += `
+                                Segment data: <br/>
+                                ${JSON.stringify(success, "  ", 2)}
+                            `;
+                        }
+                    )
+                    .catch(
+                        error => console.error(error)
+                    )
+            }
+        ));
+    </script>
+{% endblock %}
